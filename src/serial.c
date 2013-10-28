@@ -167,7 +167,7 @@ uint8_t checksum(char *buf, int len)
     return sum;
 }
 
-int phase(char *buff, int nread)
+int phase(uint8_t *buff, int nread)
 {
     int i;
     msg_head_t *head = NULL;
@@ -176,19 +176,30 @@ int phase(char *buff, int nread)
     {
         if (buff[i] == HEAD_SYNC)
         {
-            head = &buff[i];
+            head = (msg_head_t *)&buff[i];
             if (head->len > nread - 2)
             {
                 continue;
             }
-            tail = &buff[i + head->len - 1];
+            tail = (msg_tail_t *)&buff[i + head->len - 1];
             if (tail->tail != TAIL_SYNC || tail->xor_sum != checksum(&buff[i + 2], head->len - 2))
             {
                 continue;
             }
             printf("Got msg: seq:%d type:0x%X from:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X\n", head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr);
+            return 0;
         }
     }
+    return -1;
+}
+
+int recv_printf(uint8_t *buff, int nread)
+{
+    int i = 0;
+    for( ; i < nread; ++i)
+        printf(" %02X", buff[i]);
+    printf("\n");
+    return 0;
 }
 
 int main(int argc, char **argv)
@@ -198,7 +209,7 @@ int main(int argc, char **argv)
     int arg_opt, n;
     int nread;
     int baud_rate = 115200;
-    char buff[512];
+    uint8_t buff[512];
     char dev[20] ="/dev/ttyS1";
 
     #define MAX_EVENTS 5

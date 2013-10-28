@@ -15,20 +15,20 @@
 #pragma pack(1)
 
 typedef struct msg_head {
-    char head;
-    char len;
+    uint8_t head;
+    uint8_t len;
     uint16_t seq;
-    char control;
-    char type;
-    char long_addr[8];
+    uint8_t control;
+    uint8_t type;
+    uint8_t long_addr[8];
     uint16_t temp_addr;
 } msg_head_t;
 
 
 typedef struct  msg_tail
 {
-    char xor_sum;
-    char tail;
+    uint8_t xor_sum;
+    uint8_t tail;
 } msg_tail_t;
 
 #pragma pack()
