@@ -156,10 +156,10 @@ int set_speed(int fd, int speed)
     return (TRUE);
 }*/
 
-uint8_t checksum(char *buf, int len)
+uint8_t checksum(uint8_t *buf, int len)
 {
     int i;
-    uint8_t sum;
+    uint8_t sum = 0;
     for (i = 0; i < len; ++i)
     {
         sum ^= buf[i];
@@ -181,12 +181,12 @@ int phase(uint8_t *buff, int nread)
             {
                 continue;
             }
-            tail = (msg_tail_t *)&buff[i + head->len - 1];
-            if (tail->tail != TAIL_SYNC || tail->xor_sum != checksum(&buff[i + 2], head->len - 2))
+            tail = (msg_tail_t *)&buff[i + head->len];
+            if ((tail->tail != TAIL_SYNC) || (tail->xor_sum != checksum(&buff[i + 2], head->len - 2)))
             {
                 continue;
             }
-            printf("Got msg: seq:%d type:0x%X from:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X\n", head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr);
+            printf("Got msg:len:%d seq:%d type:0x%X from:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S) xor_sum:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
             return 0;
         }
     }
@@ -198,7 +198,7 @@ int recv_printf(uint8_t *buff, int nread)
     int i = 0;
     for( ; i < nread; ++i)
         printf(" %02X", buff[i]);
-    printf("\n");
+    printf(" |%d\n", nread);
     return 0;
 }
 
@@ -244,6 +244,7 @@ int main(int argc, char **argv)
     }
     else
     {
+        perror("Open");
         printf("Can't Open Serial Port!\n");
         exit(0);
     }
@@ -296,9 +297,8 @@ int main(int argc, char **argv)
             {
                 if ((nread = read(fd, buff, 512)) > 0)
                 {
-                    buff[nread+1]='\0';
+                    //recv_printf(buff, nread);
                     phase(buff, nread);
-                    printf("%s",buff);
                 }
             }
             if (events[n].data.fd == fd_in)
@@ -308,14 +308,7 @@ int main(int argc, char **argv)
             }
         }
 
-        /*while((nread = read(fd,buff,512)) > 0)
-        {
-            //printf("\nLen %d\n",nread);
-            buff[nread+1]='\0';
-            printf("\n%s",buff);
-        }
-        printf("\nLen:%d\n", nread);*/
     }
-    //close(fd);
-    //exit(0);
+    close(fd);
+    exit(0);
 }
