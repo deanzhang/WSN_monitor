@@ -42,7 +42,7 @@ int name_arr[] = {115200, 57600, 38400,  19200,  9600,  4800,  2400,  1200,  300
 int set_speed(int fd, int speed)
 {
     int   i;
-    int   status;
+    //int   status;
     struct termios   options;
 
     if  ( tcgetattr( fd,&options)  !=  0)
@@ -172,7 +172,7 @@ int phase(char *buff, int nread)
     int i;
     msg_head_t *head = NULL;
     msg_tail_t *tail = NULL;
-    for (int i = 0; i < nread; ++i)
+    for (i = 0; i < nread; ++i)
     {
         if (buff[i] == HEAD_SYNC)
         {
@@ -182,7 +182,7 @@ int phase(char *buff, int nread)
                 continue;
             }
             tail = &buff[i + head->len - 1];
-            if (tail->tail != TAIL_SYNC || tail->xor_sum != checksum(buff[i + 2], head->len - 2))
+            if (tail->tail != TAIL_SYNC || tail->xor_sum != checksum(&buff[i + 2], head->len - 2))
             {
                 continue;
             }
