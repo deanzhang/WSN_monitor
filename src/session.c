@@ -10,7 +10,7 @@ terminal_t *new_terminal(uint8_t long_addr[8], uint16_t short_addr, uint16_t seq
     s = malloc(sizeof(terminal_t));
     if(s == NULL)
         return NULL;
-    strncpy(s->long_addr, long_addr, 8);
+    memcpy(s->long_addr, long_addr, 8);
     s->short_addr = short_addr;
     s->type = TYPE_RAW;
     s->seq = seq;
@@ -25,7 +25,7 @@ terminal_t *new_terminal(uint8_t long_addr[8], uint16_t short_addr, uint16_t seq
     s->msg_count = 1;
     s->msg_error = 0;
     s->msg_lost = 0;
-    HASH_ADD_STR(terminals, fd, s);  /* fd: name of key field */
+    HASH_ADD_STR(terminals, long_addr, s);  /* fd: name of key field */
     return s;
 }
 
@@ -55,7 +55,7 @@ terminal_t *find_terminal(uint8_t long_addr[8])
 {
     terminal_t *s;
 
-    HASH_FIND_INT(terminals, long_addr, s);  /* s: output pointer */
+    HASH_FIND_STR(terminals, long_addr, s);  /* s: output pointer */
     return s;
 }
 
@@ -69,7 +69,7 @@ int update_terminal(terminal_t *s, uint8_t long_addr[8], uint16_t short_addr)
 {
     if(s == NULL)
         return -1;
-    strncpy(s->long_addr, long_addr, 8);
+    memcpy(s->long_addr, long_addr, 8);
     s->short_addr = short_addr;
     gettimeofday(&(s->tv_first), NULL);
     gettimeofday(&(s->tv_last), NULL);
@@ -81,7 +81,7 @@ int update_terminal(terminal_t *s, uint8_t long_addr[8], uint16_t short_addr)
 
 int update_name1(uint8_t long_addr[8], char *name)
 {
-    terminal_t *S;
+    terminal_t *s;
     s = find_terminal(long_addr);
     if (s == NULL)
     {
@@ -93,7 +93,7 @@ int update_name1(uint8_t long_addr[8], char *name)
 
 int update_name2(uint8_t long_addr[8], char *name)
 {
-    terminal_t *S;
+    terminal_t *s;
     s = find_terminal(long_addr);
     if (s == NULL)
     {
