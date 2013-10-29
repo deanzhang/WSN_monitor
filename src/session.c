@@ -1,0 +1,104 @@
+#include "session.h"
+
+terminal_t *terminals = NULL;    /* important! initialize to NULL */
+
+
+terminal_t *new_terminal(uint8_t long_addr[8], uint16_t short_addr, uint16_t seq)
+{
+    terminal_t *s;
+
+    s = malloc(sizeof(terminal_t));
+    if(s == NULL)
+        return NULL;
+    strncpy(s->long_addr, long_addr, 8);
+    s->short_addr = short_addr;
+    s->type = TYPE_RAW;
+    s->seq = seq;
+    sprintf(s->name1, "name1");
+    sprintf(s->name2, "name2");
+    s->pos_x = 0;
+    s->pos_y = 0;
+    s->signal_lqi = 0;
+    s->battery_state = 0;
+    gettimeofday(&(s->tv_first), NULL);
+    gettimeofday(&(s->tv_last), NULL);
+    s->msg_count = 1;
+    s->msg_error = 0;
+    s->msg_lost = 0;
+    HASH_ADD_STR(terminals, fd, s);  /* fd: name of key field */
+    return s;
+}
+
+#ifdef DEBUG
+void debug_printf(char *buf, int len)
+{
+    int j = 0;
+    for (;j < len; ++j)
+    {
+        printf("0x%02X ", (uint8_t)buf[j]);
+    }
+    printf("\n-----------\n");
+}
+#endif
+
+void terminal_print(terminal_t *s)
+{
+    if (s == NULL)
+    {
+        return;
+    }
+    printf("TEMINAL--%02X...%02X(L)-%04x(S)-%s(N1)-%s(N2)|%d(P_X)-%d(P_Y)|MSG-%d(SUM)-%d(LST)\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost);
+    return;
+}
+
+terminal_t *find_terminal(uint8_t long_addr[8])
+{
+    terminal_t *s;
+
+    HASH_FIND_INT(terminals, long_addr, s);  /* s: output pointer */
+    return s;
+}
+
+void delete_terminal(terminal_t *s)
+{
+    HASH_DEL(terminals, s);  /* s: pointer to deletee */
+    free(s);               /* optional; it's up to you! */
+}
+
+int update_terminal(terminal_t *s, uint8_t long_addr[8], uint16_t short_addr)
+{
+    if(s == NULL)
+        return -1;
+    strncpy(s->long_addr, long_addr, 8);
+    s->short_addr = short_addr;
+    gettimeofday(&(s->tv_first), NULL);
+    gettimeofday(&(s->tv_last), NULL);
+    s->msg_count = 0;
+    s->msg_error = 0;
+    s->msg_lost = 0;
+    return 0;
+}
+
+int update_name1(uint8_t long_addr[8], char *name)
+{
+    terminal_t *S;
+    s = find_terminal(long_addr);
+    if (s == NULL)
+    {
+        return -1;
+    }
+    snprintf(s->name1, 256, "%s", name);
+    return 0;
+}
+
+int update_name2(uint8_t long_addr[8], char *name)
+{
+    terminal_t *S;
+    s = find_terminal(long_addr);
+    if (s == NULL)
+    {
+        return -1;
+    }
+    snprintf(s->name2, 256, "%s", name);
+    return 0;
+}

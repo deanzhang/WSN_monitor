@@ -170,8 +170,10 @@ uint8_t checksum(uint8_t *buf, int len)
 int phase(uint8_t *buff, int nread)
 {
     int i;
+    uint32_t lost = 0;
     msg_head_t *head = NULL;
     msg_tail_t *tail = NULL;
+    terminal_t *s;
     for (i = 0; i < nread; ++i)
     {
         if (buff[i] == HEAD_SYNC)
@@ -186,6 +188,22 @@ int phase(uint8_t *buff, int nread)
             {
                 continue;
             }
+            s = find_terminal(head->long_addr);
+            if (s == NULL)
+            {
+                s = new_terminal(head->long_addr[8], head->short_addr, head->seq);
+            }
+            else
+            {
+                gettimeofday(&(s->tv_last), NULL);
+                ++(s->msg_count);
+                lost = head->seq - s->seq - 1;
+                if (lost != 0)
+                {
+                    s->msg_lost = lost;
+                }
+            }
+            terminal_print(s);
             printf("Got msg:len:%d seq:%d type:0x%X from:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S) xor_sum:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
             return 0;
         }
@@ -244,16 +262,9 @@ int main(int argc, char **argv)
     }
     else
     {
-        perror("Open");
-        printf("Can't Open Serial Port!\n");
+        perror("Open Serial");
         exit(0);
     }
-
-    /*if (set_Parity(fd, 8, 1,'N')== FALSE)
-    {
-        printf("Set Parity Error\n");
-        exit(1);
-    }*/
 
     epollfd = epoll_create(MAX_EVENTS);
     if (epollfd == -1)
