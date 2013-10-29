@@ -191,7 +191,7 @@ int phase(uint8_t *buff, int nread)
             s = find_terminal(head->long_addr);
             if (s == NULL)
             {
-                s = new_terminal(head->long_addr[8], head->short_addr, head->seq);
+                s = new_terminal(head->long_addr, head->temp_addr, head->seq);
             }
             else
             {
