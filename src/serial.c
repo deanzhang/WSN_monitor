@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <errno.h>
+#include <ncurses.h>
 #include "session.h"
 
 #define FALSE  -1
@@ -200,11 +201,13 @@ int phase(uint8_t *buff, int nread)
                 lost = head->seq - s->seq - 1;
                 if (lost != 0)
                 {
-                    s->msg_lost = lost;
+                    s->msg_lost += lost;
                 }
+                s->seq = head->seq;
             }
             terminal_print(s);
-            printf("Got msg:len:%d seq:%d type:0x%X from:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S) xor_sum:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
+            printw("Got msg:len:%d seq:%d type:0x%X from:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S) xor_sum:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
+            refresh();
             return 0;
         }
     }
@@ -288,6 +291,7 @@ int main(int argc, char **argv)
         perror("epoll_ctl: fd_in");
         exit(EXIT_FAILURE);
     }
+    initscr();
 
     while(1)
     {
@@ -320,6 +324,7 @@ int main(int argc, char **argv)
         }
 
     }
+    endwin();
     close(fd);
     exit(0);
 }

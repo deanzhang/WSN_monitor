@@ -1,3 +1,4 @@
+#include <ncurses.h>
 #include "session.h"
 
 terminal_t *terminals = NULL;    /* important! initialize to NULL */
@@ -25,7 +26,8 @@ terminal_t *new_terminal(uint8_t long_addr[8], uint16_t short_addr, uint16_t seq
     s->msg_count = 1;
     s->msg_error = 0;
     s->msg_lost = 0;
-    HASH_ADD_STR(terminals, long_addr, s);  /* fd: name of key field */
+    //HASH_ADD_STR(terminals, long_addr, s);
+    HASH_ADD(hh, terminals, long_addr, 8, s);
     return s;
 }
 
@@ -47,7 +49,7 @@ void terminal_print(terminal_t *s)
     {
         return;
     }
-    printf("TEMINAL--%02X...%02X(L)-%04x(S)-%s(N1)-%s(N2)|%d(P_X)-%d(P_Y)|MSG-%d(SUM)-%d(LST)\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost);
+    printw("TEMINAL--%02X...%02X(L)-%04x(S)-%s(N1)-%s(N2)|%d(P_X)-%d(P_Y)|MSG-%d(SUM)-%d(LST)\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost);
     return;
 }
 
@@ -55,7 +57,8 @@ terminal_t *find_terminal(uint8_t long_addr[8])
 {
     terminal_t *s;
 
-    HASH_FIND_STR(terminals, long_addr, s);  /* s: output pointer */
+    //HASH_FIND_STR(terminals, long_addr, s);
+    HASH_FIND(hh,terminals, long_addr, 8, s);
     return s;
 }
 
