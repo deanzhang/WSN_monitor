@@ -203,16 +203,17 @@ int main(int argc, char **argv)
     init_pair(5, COLOR_BLACK, COLOR_WHITE);
 
     my_win = newwin(4, 40, (LINES - 10), (COLS - 40));
-    main_win = newwin((LINES -15), (COLS - 42), 6, 0);
-    //box(my_win, 0 , 0);
-    //wrefresh(my_win);
-    //mvhline(5, 0, ACS_HLINE, 200);
-    attron(COLOR_PAIR(5));
+    main_win = newwin((LINES -15), (COLS - 41), 6, 0);
+    //box(main_win, 0 , 0);
+    //attron(COLOR_PAIR(5));
     printw("Welcome\n");
-    //mvhline(5, 0, '-', 200);
     mvhline(5, 0, ACS_HLINE, COLS);
-    mvwprintw(main_win, 0, 0, "TEM--LONG_ADDR-SHORT_ADDR-Name1-Name2-P_X-P_Y\tMSG-(SUM)-(LST)");
-    attroff(COLOR_PAIR(5));
+    mvvline(6, (COLS - 41), ACS_VLINE, LINES -6);
+    mvaddch(5, (COLS - 41), ACS_TTEE);
+    //attroff(COLOR_PAIR(5));
+    wattron(main_win, COLOR_PAIR(5));
+    mvwprintw(main_win, 0, 0, "TEM-L_ADDR-S_ADDR-Name1-Name2-P_X-P_Y\tMSG-(SUM)-(LST)");
+    wattroff(main_win, COLOR_PAIR(5));
     refresh();
 
     while(1)
