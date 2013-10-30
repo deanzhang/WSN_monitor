@@ -114,7 +114,7 @@ int phase(uint8_t *buff, int nread)
                 }
                 s->seq = head->seq;
             }
-            terminal_print(main_win, s);
+            terminal_print(main_win, 1, 2, s);
             mvwprintw(my_win, 0, x, "Got msg:len:%d seq:%d type:0x%X\nFRM:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S)\nXOR:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
             refresh();
             i += head->len;
@@ -203,7 +203,7 @@ int main(int argc, char **argv)
     init_pair(5, COLOR_BLACK, COLOR_WHITE);
 
     my_win = newwin(4, 40, (LINES - 10), (COLS - 40));
-    main_win = newwin((LINES -15), (COLS - 42), 5, 0);
+    main_win = newwin((LINES -15), (COLS - 42), 6, 0);
     //box(my_win, 0 , 0);
     //wrefresh(my_win);
     //mvhline(5, 0, ACS_HLINE, 200);
@@ -211,6 +211,7 @@ int main(int argc, char **argv)
     printw("Welcome\n");
     //mvhline(5, 0, '-', 200);
     mvhline(5, 0, ACS_HLINE, COLS);
+    mvwprintw(main_win, 6, 0, "TEM--LONG_ADDR-SHORT_ADDR-Name1-Name2-P_X-P_Y\tMSG-(SUM)-(LST)");
     attroff(COLOR_PAIR(5));
     refresh();
 
