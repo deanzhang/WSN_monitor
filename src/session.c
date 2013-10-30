@@ -2,7 +2,7 @@
 #include "session.h"
 
 terminal_t *terminals = NULL;    /* important! initialize to NULL */
-
+unsigned int num_users;
 
 terminal_t *new_terminal(uint8_t long_addr[8], uint16_t short_addr, uint16_t seq)
 {
@@ -49,6 +49,8 @@ void terminal_print(terminal_t *s)
     {
         return;
     }
+    num_users = HASH_COUNT(terminals);
+    mvprintw(0, 10, "TEM_CNT:%d", num_users);
     mvprintw(LINES - 3, 0, "TEMINAL--%02X...%02X(L)-%04x(S)-%s(N1)-%s(N2)|%d(P_X)-%d(P_Y)|MSG-%d(SUM)-%d(LST)\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost);
     return;
 }

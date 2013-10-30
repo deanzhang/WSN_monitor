@@ -10,6 +10,9 @@
 #include <ncurses.h>
 #include "session.h"
 
+WINDOW *my_win;
+int error = 0;
+
 int speed_arr[] = {B115200, B57600, B38400, B19200, B9600, B4800, B2400, B1200, B300,
         B38400, B19200, B9600, B4800, B2400, B1200, B300, };
 int name_arr[] = {115200, 57600, 38400,  19200,  9600,  4800,  2400,  1200,  300,
@@ -168,10 +171,12 @@ uint8_t checksum(uint8_t *buf, int len)
 int phase(uint8_t *buff, int nread)
 {
     int i;
+    int y, x;
     uint32_t lost = 0;
     msg_head_t *head = NULL;
     msg_tail_t *tail = NULL;
     terminal_t *s;
+    getyx(my_win, y, x);
     for (i = 0; i < nread; ++i)
     {
         if (buff[i] == HEAD_SYNC)
@@ -179,11 +184,15 @@ int phase(uint8_t *buff, int nread)
             head = (msg_head_t *)&buff[i];
             if (head->len > nread - 2)
             {
+                mvprintw(0, 20, "ERRORS:%d", ++error);
+                recv_printf(1, 20, buff, nread, 1);
                 continue;
             }
             tail = (msg_tail_t *)&buff[i + head->len];
             if ((tail->tail != TAIL_SYNC) || (tail->xor_sum != checksum(&buff[i + 2], head->len - 2)))
             {
+                mvprintw(0, 20, "ERRORS:%d", ++error);
+                recv_printf(1, 20, buff, nread, 1);
                 continue;
             }
             s = find_terminal(head->long_addr);
@@ -203,7 +212,7 @@ int phase(uint8_t *buff, int nread)
                 s->seq = head->seq;
             }
             terminal_print(s);
-            mvprintw(LINES - 2, 2, "Got msg:len:%d seq:%d type:0x%X from:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S) xor_sum:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
+            mvwprintw(my_win, 0, x, "Got msg:len:%d seq:%d type:0x%X\nFRM:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S)\nXOR:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
             refresh();
             return 0;
         }
@@ -211,12 +220,15 @@ int phase(uint8_t *buff, int nread)
     return -1;
 }
 
-int recv_printf(uint8_t *buff, int nread)
+int recv_printf(int y, int x, uint8_t *buff, int nread, chtype color)
 {
     int i = 0;
+    move(y, x);
+    attron(color);
     for( ; i < nread; ++i)
-        printf(" %02X", buff[i]);
-    printf(" |%d\n", nread);
+        printw(" %02X", buff[i]);
+    attroff(color);
+    printw(" |%d\n", nread);
     return 0;
 }
 
@@ -229,7 +241,6 @@ int main(int argc, char **argv)
     int baud_rate = 115200;
     uint8_t buff[512];
     char dev[20] ="/dev/ttyS1";
-    WINDOW *my_win;
 
     #define MAX_EVENTS 5
     struct epoll_event ev, events[MAX_EVENTS];
@@ -289,10 +300,25 @@ int main(int argc, char **argv)
         perror("epoll_ctl: fd_in");
         exit(EXIT_FAILURE);
     }
+
     initscr();
-    my_win = newwin(10, 10, (LINES - 10) / 2, (COLS - 10) / 2);
-    box(my_win, 0 , 0);
-    wrefresh(my_win);
+    start_color();
+    init_pair(1, COLOR_RED, COLOR_BLACK);
+    init_pair(2, COLOR_GREEN, COLOR_BLACK);
+    init_pair(3, COLOR_BLUE, COLOR_BLACK);
+    init_pair(4, COLOR_CYAN, COLOR_BLACK);
+    init_pair(5, COLOR_BLACK, COLOR_WHITE);
+
+    my_win = newwin(4, 40, (LINES - 10), (COLS - 40));
+    //box(my_win, 0 , 0);
+    //wrefresh(my_win);
+    //mvhline(5, 0, ACS_HLINE, 200);
+    attron(COLOR_PAIR(5));
+    printw("Welcome\n");
+    //mvhline(5, 0, '-', 200);
+    mvhline(5, 0, ACS_HLINE, 200);
+    attroff(COLOR_PAIR(5));
+    refresh();
 
     while(1)
     {
@@ -313,7 +339,7 @@ int main(int argc, char **argv)
             {
                 if ((nread = read(fd, buff, 512)) > 0)
                 {
-                    //recv_printf(buff, nread);
+                    recv_printf(LINES - 4, 0, buff, nread, 3);
                     phase(buff, nread);
                 }
             }
@@ -323,6 +349,7 @@ int main(int argc, char **argv)
                     write(fd, buff, nread);
             }
         }
+        wrefresh(my_win);
 
     }
     endwin();
