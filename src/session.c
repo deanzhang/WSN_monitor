@@ -55,6 +55,18 @@ void terminal_print(terminal_t *s)
     return;
 }
 
+int recv_printf(int y, int x, uint8_t *buff, int nread, chtype color)
+{
+    int i = 0;
+    move(y, x);
+    attron(color);
+    for( ; i < nread; ++i)
+        printw(" %02X", buff[i]);
+    attroff(color);
+    printw(" |%d\n", nread);
+    return 0;
+}
+
 terminal_t *find_terminal(uint8_t long_addr[8])
 {
     terminal_t *s;

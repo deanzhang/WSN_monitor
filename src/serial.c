@@ -220,17 +220,6 @@ int phase(uint8_t *buff, int nread)
     return -1;
 }
 
-int recv_printf(int y, int x, uint8_t *buff, int nread, chtype color)
-{
-    int i = 0;
-    move(y, x);
-    attron(color);
-    for( ; i < nread; ++i)
-        printw(" %02X", buff[i]);
-    attroff(color);
-    printw(" |%d\n", nread);
-    return 0;
-}
 
 int main(int argc, char **argv)
 {

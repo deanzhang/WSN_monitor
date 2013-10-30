@@ -68,6 +68,7 @@ int update_terminal(terminal_t *s, uint8_t long_addr[8], uint16_t short_addr);
 int update_name1(uint8_t long_addr[8], char *name);
 int update_name2(uint8_t long_addr[8], char *name);
 void terminal_print(terminal_t *s);
+int recv_printf(int y, int x, uint8_t *buff, int nread, chtype color);
 
 
 #endif  //#define SESSION_H
