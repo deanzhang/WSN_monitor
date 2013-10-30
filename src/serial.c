@@ -211,7 +211,7 @@ int main(int argc, char **argv)
     printw("Welcome\n");
     //mvhline(5, 0, '-', 200);
     mvhline(5, 0, ACS_HLINE, COLS);
-    mvwprintw(main_win, 6, 0, "TEM--LONG_ADDR-SHORT_ADDR-Name1-Name2-P_X-P_Y\tMSG-(SUM)-(LST)");
+    mvwprintw(main_win, 0, 0, "TEM--LONG_ADDR-SHORT_ADDR-Name1-Name2-P_X-P_Y\tMSG-(SUM)-(LST)");
     attroff(COLOR_PAIR(5));
     refresh();
 

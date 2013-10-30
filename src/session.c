@@ -51,7 +51,7 @@ void terminal_print(WINDOW *win, int y, int x, terminal_t *s)
     }
     num_users = HASH_COUNT(terminals);
     mvprintw(0, 10, "TEM_CNT:%d", num_users);
-    mvwprintw(win, y, x, "TEMINAL--%02X...%02X(L)-%04x(S)-%s(N1)-%s(N2)|%d(P_X)-%d(P_Y)|MSG-%d(SUM)-%d(LST)\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost);
+    mvwprintw(win, y, x, "%02X   %02X   %04x   %s   %s   %d   %d   %d   %d\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost);
     return;
 }
 
