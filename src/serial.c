@@ -18,32 +18,9 @@ int speed_arr[] = {B115200, B57600, B38400, B19200, B9600, B4800, B2400, B1200, 
 int name_arr[] = {115200, 57600, 38400,  19200,  9600,  4800,  2400,  1200,  300,
         38400,  19200,  9600, 4800, 2400, 1200,  300, };
 
-/*void set_speed_old(int fd, int speed)
-{
-    int   i;
-    int   status;
-    struct termios   Opt;
-    tcgetattr(fd, &Opt);
-    for ( i= 0;  i < sizeof(speed_arr) / sizeof(int);  i++)
-    {
-        if  (speed == name_arr[i])
-        {
-            tcflush(fd, TCIOFLUSH);
-            cfsetispeed(&Opt, speed_arr[i]);
-            cfsetospeed(&Opt, speed_arr[i]);
-            status = tcsetattr(fd, TCSANOW, &Opt);
-            if  (status != 0)
-                perror("tcsetattr fd1");
-            return;
-        }
-        tcflush(fd,TCIOFLUSH);
-   }
-}*/
-
 int set_speed(int fd, int speed)
 {
     int   i;
-    //int   status;
     struct termios   options;
 
     if  ( tcgetattr( fd,&options)  !=  0)
@@ -82,81 +59,6 @@ int set_speed(int fd, int speed)
     return (TRUE);
 }
 
-/*int set_Parity(int fd,int databits,int stopbits,int parity)
-{
-    struct termios options;
-    if  ( tcgetattr( fd,&options)  !=  0)
-    {
-        perror("SetupSerial 1");
-        return(FALSE);
-    }
-    options.c_cflag &= ~CSIZE;
-    switch (databits)
-    {
-        case 7:
-            options.c_cflag |= CS7;
-            break;
-        case 8:
-            options.c_cflag |= CS8;
-            break;
-        default:
-            fprintf(stderr,"Unsupported data size\n");
-            return (FALSE);
-    }
-    switch (parity)
-    {
-        case 'n':
-        case 'N':
-            options.c_cflag &= ~PARENB;
-            options.c_iflag &= ~INPCK;
-            break;
-        case 'o':
-        case 'O':
-            options.c_cflag |= (PARODD | PARENB);
-            options.c_iflag |= INPCK;
-            break;
-        case 'e':
-        case 'E':
-            options.c_cflag |= PARENB;
-            options.c_cflag &= ~PARODD;
-            options.c_iflag |= INPCK;
-            break;
-        case 'S':
-        case 's': 
-            options.c_cflag &= ~PARENB;
-            options.c_cflag &= ~CSTOPB;
-            break;
-        default:
-            fprintf(stderr,"Unsupported parity\n");
-            return (FALSE);
-    }
-
-    switch (stopbits)
-    {
-        case 1:
-            options.c_cflag &= ~CSTOPB;
-            break;
-        case 2:
-            options.c_cflag |= CSTOPB;
-            break;
-        default:
-            fprintf(stderr,"Unsupported stop bits\n");
-            return (FALSE);
-    }
-    if (parity != 'n')
-        options.c_iflag |= INPCK;
-    options.c_cc[VTIME] = 150; // 15 seconds
-    options.c_cc[VMIN] = 0;
-
-    tcflush(fd,TCIFLUSH);
-    if (tcsetattr(fd,TCSANOW,&options) != 0)
-    {
-        perror("SetupSerial 3");
-        return (FALSE);
-    }
-    return (TRUE);
-}*/
-
 uint8_t checksum(uint8_t *buf, int len)
 {
     int i;
@@ -185,14 +87,14 @@ int phase(uint8_t *buff, int nread)
             if (head->len > nread - 2)
             {
                 mvprintw(0, 20, "ERRORS:%d", ++error);
-                recv_printf(1, 20, buff, nread, 1);
+                recv_printf(1, 20, buff, nread, COLOR_PAIR(1));
                 continue;
             }
             tail = (msg_tail_t *)&buff[i + head->len];
             if ((tail->tail != TAIL_SYNC) || (tail->xor_sum != checksum(&buff[i + 2], head->len - 2)))
             {
                 mvprintw(0, 20, "ERRORS:%d", ++error);
-                recv_printf(1, 20, buff, nread, 1);
+                recv_printf(1, 20, buff, nread, COLOR_PAIR(1));
                 continue;
             }
             s = find_terminal(head->long_addr);
@@ -328,7 +230,7 @@ int main(int argc, char **argv)
             {
                 if ((nread = read(fd, buff, 512)) > 0)
                 {
-                    recv_printf(LINES - 4, 0, buff, nread, 3);
+                    recv_printf(LINES - 4, 0, buff, nread, COLOR_PAIR(3));
                     phase(buff, nread);
                 }
             }
