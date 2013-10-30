@@ -11,6 +11,7 @@
 #include "session.h"
 
 WINDOW *my_win;
+WINDOW *main_win;
 int error = 0;
 
 int speed_arr[] = {B115200, B57600, B38400, B19200, B9600, B4800, B2400, B1200, B300,
@@ -113,7 +114,7 @@ int phase(uint8_t *buff, int nread)
                 }
                 s->seq = head->seq;
             }
-            terminal_print(s);
+            terminal_print(main_win, s);
             mvwprintw(my_win, 0, x, "Got msg:len:%d seq:%d type:0x%X\nFRM:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S)\nXOR:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
             refresh();
             i += head->len;
@@ -202,13 +203,14 @@ int main(int argc, char **argv)
     init_pair(5, COLOR_BLACK, COLOR_WHITE);
 
     my_win = newwin(4, 40, (LINES - 10), (COLS - 40));
+    main_win = newwin((LINES -15), (COLS - 42), 5, 0);
     //box(my_win, 0 , 0);
     //wrefresh(my_win);
     //mvhline(5, 0, ACS_HLINE, 200);
     attron(COLOR_PAIR(5));
     printw("Welcome\n");
     //mvhline(5, 0, '-', 200);
-    mvhline(5, 0, ACS_HLINE, 200);
+    mvhline(5, 0, ACS_HLINE, COLS);
     attroff(COLOR_PAIR(5));
     refresh();
 
@@ -241,6 +243,7 @@ int main(int argc, char **argv)
                     write(fd, buff, nread);
             }
         }
+        wrefresh(main_win);
         wrefresh(my_win);
 
     }
