@@ -84,7 +84,7 @@ int phase(uint8_t *buff, int nread)
         if (buff[i] == HEAD_SYNC)
         {
             head = (msg_head_t *)&buff[i];
-            if (head->len > nread - 2)
+            if (head->len > (nread - i - 2))
             {
                 mvprintw(0, 20, "ERRORS:%d", ++error);
                 recv_printf(1, 20, buff, nread, COLOR_PAIR(1));
@@ -116,6 +116,7 @@ int phase(uint8_t *buff, int nread)
             terminal_print(s);
             mvwprintw(my_win, 0, x, "Got msg:len:%d seq:%d type:0x%X\nFRM:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S)\nXOR:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
             refresh();
+            i += head->len;
             return 0;
         }
     }
