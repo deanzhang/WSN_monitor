@@ -49,7 +49,7 @@ void terminal_print(terminal_t *s)
     {
         return;
     }
-    printw("TEMINAL--%02X...%02X(L)-%04x(S)-%s(N1)-%s(N2)|%d(P_X)-%d(P_Y)|MSG-%d(SUM)-%d(LST)\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost);
+    mvprintw(LINES - 3, 0, "TEMINAL--%02X...%02X(L)-%04x(S)-%s(N1)-%s(N2)|%d(P_X)-%d(P_Y)|MSG-%d(SUM)-%d(LST)\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost);
     return;
 }
 

@@ -10,9 +10,6 @@
 #include <ncurses.h>
 #include "session.h"
 
-#define FALSE  -1
-#define TRUE   0
-
 int speed_arr[] = {B115200, B57600, B38400, B19200, B9600, B4800, B2400, B1200, B300,
         B38400, B19200, B9600, B4800, B2400, B1200, B300, };
 int name_arr[] = {115200, 57600, 38400,  19200,  9600,  4800,  2400,  1200,  300,
@@ -206,7 +203,7 @@ int phase(uint8_t *buff, int nread)
                 s->seq = head->seq;
             }
             terminal_print(s);
-            printw("Got msg:len:%d seq:%d type:0x%X from:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S) xor_sum:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
+            mvprintw(LINES - 2, 2, "Got msg:len:%d seq:%d type:0x%X from:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S) xor_sum:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
             refresh();
             return 0;
         }
@@ -232,6 +229,7 @@ int main(int argc, char **argv)
     int baud_rate = 115200;
     uint8_t buff[512];
     char dev[20] ="/dev/ttyS1";
+    WINDOW *my_win;
 
     #define MAX_EVENTS 5
     struct epoll_event ev, events[MAX_EVENTS];
@@ -292,6 +290,9 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
     initscr();
+    my_win = newwin(10, 10, (LINES - 10) / 2, (COLS - 10) / 2);
+    box(my_win, 0 , 0);
+    wrefresh(my_win);
 
     while(1)
     {
