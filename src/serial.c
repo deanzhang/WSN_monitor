@@ -82,7 +82,7 @@ uint8_t checksum(uint8_t *buf, int len)
 
 int phase(uint8_t *buff, int nread)
 {
-    int i;
+    int i, tail_index = 0;
     int y, x;
     uint32_t lost = 0;
     int respon_flag = 0;
@@ -131,8 +131,13 @@ int phase(uint8_t *buff, int nread)
             mvwprintw(my_win, 0, x, "Got msg:len:%d seq:%d type:%s\nFRM:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S)\nXOR:%02X\n", head->len, head->seq, (head->type >= 0x20)?msg_type[head->type - 29]:msg_type[head->type], head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum);
             refresh();
             i += head->len;
+            tail_index = i + 2;
             //return 0;
         }
+    }
+    if (tail_index < nread)
+    {
+        recv_printf(1, 20, buff + tail_index, nread - tail_index, COLOR_PAIR(1));
     }
     return -1;
 }
@@ -206,6 +211,7 @@ int main(int argc, char **argv)
         perror("epoll_ctl: fd_in");
         exit(EXIT_FAILURE);
     }
+    read(fd, buff, 512);
 
     initscr();
     start_color();
