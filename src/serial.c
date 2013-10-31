@@ -114,7 +114,6 @@ int phase(uint8_t *buff, int nread)
                 }
                 s->seq = head->seq;
             }
-            terminal_print(main_win, 1, 2, s);
             mvwprintw(my_win, 0, x, "Got msg:len:%d seq:%d type:0x%X\nFRM:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S)\nXOR:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
             refresh();
             i += head->len;
@@ -245,6 +244,7 @@ int main(int argc, char **argv)
                     write(fd, buff, nread);
             }
         }
+        terminal_print(main_win, 1, 2);
         wrefresh(main_win);
         wrefresh(my_win);
 
