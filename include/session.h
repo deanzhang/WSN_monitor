@@ -19,6 +19,14 @@
 #define TYPE_ROUTE  0x01
 #define TYPE_NORMAL 0x02
 
+char *msg_type[] = {
+    "Handshark",
+    "Power UP",
+    "Re-enter",
+    "Acquire",
+    "Position"
+};
+
 typedef struct  terminal
 {
     uint8_t     long_addr[8];
