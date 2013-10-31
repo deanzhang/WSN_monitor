@@ -261,8 +261,9 @@ int main(int argc, char **argv)
             }
             if (events[n].data.fd == fd_in)
             {
-                if ((nread = read(fd_in, buff, 512)) > 0)
-                    write(fd, buff, nread);
+                if ((nread = read(fd_in, buff, 512)) > 0 && (buff[0] == 'q'))
+                    goto ending;
+                    //write(fd, buff, nread);
             }
         }
         terminal_print(main_win, 1, 0);
@@ -270,6 +271,7 @@ int main(int argc, char **argv)
         wrefresh(my_win);
 
     }
+ending:
     endwin();
     close(fd);
     exit(0);
