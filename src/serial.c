@@ -76,6 +76,7 @@ int phase(uint8_t *buff, int nread)
     int i;
     int y, x;
     uint32_t lost = 0;
+    int respon_flag = 0;
     msg_head_t *head = NULL;
     msg_tail_t *tail = NULL;
     terminal_t *s;
@@ -88,15 +89,19 @@ int phase(uint8_t *buff, int nread)
             if (head->len > (nread - i - 2))
             {
                 mvprintw(0, 20, "ERRORS:%d", ++error);
-                recv_printf(1, 20, buff, nread, COLOR_PAIR(1));
+                recv_printf(1, 20, buff + i, nread - i, COLOR_PAIR(1));
                 continue;
             }
             tail = (msg_tail_t *)&buff[i + head->len];
             if ((tail->tail != TAIL_SYNC) || (tail->xor_sum != checksum(&buff[i + 2], head->len - 2)))
             {
                 mvprintw(0, 20, "ERRORS:%d", ++error);
-                recv_printf(1, 20, buff, nread, COLOR_PAIR(1));
+                recv_printf(1, 20, buff + i, nread - i, COLOR_PAIR(1));
                 continue;
+            }
+            if (head->control & 0x80 != 0)
+            {
+                respon_flag = 1;
             }
             s = find_terminal(head->long_addr);
             if (s == NULL)
@@ -114,10 +119,10 @@ int phase(uint8_t *buff, int nread)
                 }
                 s->seq = head->seq;
             }
-            mvwprintw(my_win, 0, x, "Got msg:len:%d seq:%d type:0x%X\nFRM:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S)\nXOR:%02X(%02X)\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum, checksum(&buff[i + 2], head->len - 2));
+            mvwprintw(my_win, 0, x, "Got msg:len:%d seq:%d type:0x%X\nFRM:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S)\nXOR:%02X\n", head->len, head->seq, head->type, head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum);
             refresh();
             i += head->len;
-            return 0;
+            //return 0;
         }
     }
     return -1;
@@ -217,7 +222,7 @@ int main(int argc, char **argv)
 
     while(1)
     {
-        nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
+        nfds = epoll_wait(epollfd, events, MAX_EVENTS, 1000);
         if (nfds == -1)
         {
             perror("epoll_pwait");
@@ -244,7 +249,7 @@ int main(int argc, char **argv)
                     write(fd, buff, nread);
             }
         }
-        terminal_print(main_win, 1, 2);
+        terminal_print(main_win, 1, 0);
         wrefresh(main_win);
         wrefresh(my_win);
 

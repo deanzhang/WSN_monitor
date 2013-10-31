@@ -57,7 +57,7 @@ void terminal_print(WINDOW *win, int y, int x)
     {
         ctime_r(&(s->tv_first.tv_sec), time_first);
         ctime_r(&(s->tv_last.tv_sec), time_last);
-        printw("%02X...%02X   %04x  %s  %s  %d   %d  %6d %6d %s %s\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost, time_first, time_last);
+        wprintw(win, "%02X...%02X   %04x  %s  %s  %d   %d  %6d %6d %s %s\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost, time_first, time_last);
     }
     return;
 }
