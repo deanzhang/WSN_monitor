@@ -14,6 +14,15 @@ WINDOW *my_win;
 WINDOW *main_win;
 int error = 0;
 
+char *msg_type[] = {
+    "Handshark",
+    "Power UP",
+    "Re-enter",
+    "Acquire",
+    "Position",
+    "UNKOWN"
+};
+
 int speed_arr[] = {B115200, B57600, B38400, B19200, B9600, B4800, B2400, B1200, B300,
         B38400, B19200, B9600, B4800, B2400, B1200, B300, };
 int name_arr[] = {115200, 57600, 38400,  19200,  9600,  4800,  2400,  1200,  300,
@@ -119,7 +128,7 @@ int phase(uint8_t *buff, int nread)
                 }
                 s->seq = head->seq;
             }
-            mvwprintw(my_win, 0, x, "Got msg:len:%d seq:%d type:%s\nFRM:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S)\nXOR:%02X\n", head->len, head->seq, (head->type > 0x20)?msg_type[head->type - 29]:msg_type[head->type], head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum);
+            mvwprintw(my_win, 0, x, "Got msg:len:%d seq:%d type:%s\nFRM:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S)\nXOR:%02X\n", head->len, head->seq, (head->type >= 0x20)?msg_type[head->type - 29]:msg_type[head->type], head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum);
             refresh();
             i += head->len;
             //return 0;
