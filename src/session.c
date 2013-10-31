@@ -45,13 +45,17 @@ void debug_printf(char *buf, int len)
 
 void terminal_print(WINDOW *win, int y, int x, terminal_t *s)
 {
+    char time_first[40] = {0;
+    char time_last[40] = {0};
     if (s == NULL)
     {
         return;
     }
     num_users = HASH_COUNT(terminals);
     mvprintw(0, 10, "TEM_CNT:%d", num_users);
-    mvwprintw(win, y, x, "%02X...%02X   %04x  %s  %s  %d   %d  %6d %6d %s %s\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost, ctime(&(s->tv_first.tv_sec)), ctime(&(s->tv_last.tv_sec)));
+    ctime_r(&(s->tv_first.tv_sec), time_first);
+    ctime_r(&(s->tv_last.tv_sec), time_last);
+    mvwprintw(win, y, x, "%02X...%02X   %04x  %s  %s  %d   %d  %6d %6d %s %s\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost, time_first, time_last);
     return;
 }
 
