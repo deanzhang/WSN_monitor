@@ -138,6 +138,7 @@ int phase(uint8_t *buff, int nread)
     }
     if (tail_index < nread)
     {
+        mvprintw(0, 20, "ERRORS:%d", ++error);
         recv_printf(1, 20, buff + tail_index, nread - tail_index, COLOR_PAIR(1));
     }
     return -1;

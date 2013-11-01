@@ -62,7 +62,7 @@ MENU *terminal_print(WINDOW *win, int y, int x)
     {
         ctime_r(&(s->tv_first.tv_sec), time_first);
         ctime_r(&(s->tv_last.tv_sec), time_last);
-        snprintf(s->desc, 255, "%02X...%02X %04x  %d  %d  %6u %6u %s %s", s->long_addr[0], s->long_addr[7], s->short_addr, s->pos_x, s->pos_y, s->msg_count, s->msg_lost, time_first, time_last)
+        sprintf(s->desc, "%02X..%02X-%04X %6u %6u %f", s->long_addr[0], s->long_addr[7], s->short_addr, s->msg_count, s->msg_lost, difftime(s->tv_last.tv_sec, s->tv_first.tv_sec));
         my_items[i] = new_item(s->name1, s->desc);
         //wprintw(win, "%02X...%02X   %04x  %s  %s  %d   %d  %6u %6u %s %s\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost, time_first, time_last);
     }
@@ -70,11 +70,11 @@ MENU *terminal_print(WINDOW *win, int y, int x)
     my_menu = new_menu((ITEM **)my_items);
     /* Set main window and sub window */
     set_menu_win(my_menu, win);
-    set_menu_sub(my_menu, derwin(win, 6, 20, y, x));
+    set_menu_sub(my_menu, derwin(win, 6, 50, y, x));
     //set_menu_format(my_menu, 5, 1);
             
     /* Set menu mark to the string " * " */
-    set_menu_mark(my_menu, " * ");
+    set_menu_mark(my_menu, "*");
     post_menu(my_menu);
     return my_menu;
     //return NULL;
@@ -96,7 +96,6 @@ terminal_t *find_terminal(uint8_t long_addr[8])
 {
     terminal_t *s;
 
-    //HASH_FIND_STR(terminals, long_addr, s);
     HASH_FIND(hh,terminals, long_addr, 8, s);
     return s;
 }
