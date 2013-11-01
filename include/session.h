@@ -29,6 +29,7 @@ typedef struct  terminal
     uint8_t     type;
     char        name1[256];
     char        name2[256];
+    char        desc[256];
     int32_t     pos_x;
     int32_t     pos_y;
     uint8_t     signal_lqi;

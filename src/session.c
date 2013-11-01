@@ -62,8 +62,8 @@ MENU *terminal_print(WINDOW *win, int y, int x)
     {
         ctime_r(&(s->tv_first.tv_sec), time_first);
         ctime_r(&(s->tv_last.tv_sec), time_last);
-        //my_items[i] = new_item(s->name1, time_last);
-        my_items[i] = new_item(s->name1, s->name2);
+        snprintf(s->desc, 255, "%02X...%02X %04x  %d  %d  %6u %6u %s %s", s->long_addr[0], s->long_addr[7], s->short_addr, s->pos_x, s->pos_y, s->msg_count, s->msg_lost, time_first, time_last)
+        my_items[i] = new_item(s->name1, s->desc);
         //wprintw(win, "%02X...%02X   %04x  %s  %s  %d   %d  %6u %6u %s %s\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost, time_first, time_last);
     }
     my_items[i] = (ITEM *)NULL;
