@@ -267,9 +267,9 @@ int main(int argc, char **argv)
                 //if ((nread = read(fd_in, buff, 512)) > 0 && (buff[0] == 'q'))
                     //goto ending;
                     //write(fd, buff, nread);
-                while((c = wgetch(main_win)) != KEY_F(1))
+                while((i = wgetch(main_win)) != KEY_F(1))
                 {
-                    switch(c)
+                    switch(i)
                     {
                         case KEY_DOWN:
                             menu_driver(my_menu, REQ_DOWN_ITEM);
@@ -283,17 +283,25 @@ int main(int argc, char **argv)
                         case KEY_PPAGE:
                             menu_driver(my_menu, REQ_SCR_UPAGE);
                             break;
-                        case 'q'
+                        case 'q':
                             goto ending;
                     }
                     wrefresh(main_win);
                 }
             }
         }
-        unpost_menu(my_menu);
-        free_menu(my_menu);
+        if(my_menu)
+        {
+            unpost_menu(my_menu);
+            free_menu(my_menu);
+        }
+        if(my_items)
         for(i = 0; i < num_users + 1; ++i)
+        {
+            if(my_items[i])
                 free_item(my_items[i]);
+        }
+        i = 0;
         my_menu = terminal_print(main_win, 1, 0);
         wrefresh(main_win);
         wrefresh(my_win);

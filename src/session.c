@@ -1,8 +1,8 @@
 #include "session.h"
 
 terminal_t *terminals = NULL;    /* important! initialize to NULL */
-unsigned int num_users;
-ITEM **my_items;
+unsigned int num_users = 0;
+ITEM **my_items = NULL;
 
 terminal_t *new_terminal(uint8_t long_addr[8], uint16_t short_addr, uint16_t seq)
 {
@@ -45,7 +45,7 @@ void debug_printf(char *buf, int len)
 
 MENU *terminal_print(WINDOW *win, int y, int x)
 {
-    MENU *my_menu;
+    MENU *my_menu = NULL;
     int i = 0;
 
     char time_first[40] = {0};
@@ -62,20 +62,22 @@ MENU *terminal_print(WINDOW *win, int y, int x)
     {
         ctime_r(&(s->tv_first.tv_sec), time_first);
         ctime_r(&(s->tv_last.tv_sec), time_last);
-        my_items[i] = new_item(s->name1, time_last);
+        //my_items[i] = new_item(s->name1, time_last);
+        my_items[i] = new_item(s->name1, s->name2);
         //wprintw(win, "%02X...%02X   %04x  %s  %s  %d   %d  %6u %6u %s %s\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost, time_first, time_last);
     }
     my_items[i] = (ITEM *)NULL;
     my_menu = new_menu((ITEM **)my_items);
     /* Set main window and sub window */
     set_menu_win(my_menu, win);
-    set_menu_sub(my_menu, derwin(win, 6, 38, 3, 1));
-    set_menu_format(my_menu, 5, 1);
+    set_menu_sub(my_menu, derwin(win, 6, 20, y, x));
+    //set_menu_format(my_menu, 5, 1);
             
     /* Set menu mark to the string " * " */
     set_menu_mark(my_menu, " * ");
     post_menu(my_menu);
     return my_menu;
+    //return NULL;
 }
 
 int recv_printf(int y, int x, uint8_t *buff, int nread, chtype color)
