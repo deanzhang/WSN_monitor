@@ -1,8 +1,8 @@
-#include <ncurses.h>
 #include "session.h"
 
 terminal_t *terminals = NULL;    /* important! initialize to NULL */
 unsigned int num_users;
+ITEM **my_items;
 
 terminal_t *new_terminal(uint8_t long_addr[8], uint16_t short_addr, uint16_t seq)
 {
@@ -43,8 +43,11 @@ void debug_printf(char *buf, int len)
 }
 #endif
 
-void terminal_print(WINDOW *win, int y, int x)
+MENU *terminal_print(WINDOW *win, int y, int x)
 {
+    MENU *my_menu;
+    int i = 0;
+
     char time_first[40] = {0};
     char time_last[40] = {0};
     terminal_t *s;
@@ -52,14 +55,27 @@ void terminal_print(WINDOW *win, int y, int x)
     num_users = HASH_COUNT(terminals);
     mvprintw(0, 10, "TEM_CNT:%d", num_users);
 
+    my_items = (ITEM **)calloc(num_users + 1, sizeof(ITEM *));
+
     wmove(win, y, x);
-    for(s = terminals; s != NULL; s=s->hh.next)
+    for(s = terminals; s != NULL; s=s->hh.next, ++i)
     {
         ctime_r(&(s->tv_first.tv_sec), time_first);
         ctime_r(&(s->tv_last.tv_sec), time_last);
-        wprintw(win, "%02X...%02X   %04x  %s  %s  %d   %d  %6u %6u %s %s\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost, time_first, time_last);
+        my_items[i] = new_item(s->name1, time_last);
+        //wprintw(win, "%02X...%02X   %04x  %s  %s  %d   %d  %6u %6u %s %s\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost, time_first, time_last);
     }
-    return;
+    my_items[i] = (ITEM *)NULL;
+    my_menu = new_menu((ITEM **)my_items);
+    /* Set main window and sub window */
+    set_menu_win(my_menu, win);
+    set_menu_sub(my_menu, derwin(win, 6, 38, 3, 1));
+    set_menu_format(my_menu, 5, 1);
+            
+    /* Set menu mark to the string " * " */
+    set_menu_mark(my_menu, " * ");
+    post_menu(my_menu);
+    return my_menu;
 }
 
 int recv_printf(int y, int x, uint8_t *buff, int nread, chtype color)

@@ -7,11 +7,12 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <errno.h>
-#include <ncurses.h>
 #include "session.h"
 
 WINDOW *my_win;
 WINDOW *main_win;
+extern unsigned int num_users;
+extern ITEM **my_items;
 int error = 0;
 
 char *msg_type[] = {
@@ -152,6 +153,8 @@ int main(int argc, char **argv)
     int baud_rate = 115200;
     uint8_t buff[512];
     char dev[20] ="/dev/ttyS1";
+    int i;
+    MENU *my_menu = NULL;
 
     #define MAX_EVENTS 5
     struct epoll_event ev, events[MAX_EVENTS];
@@ -261,12 +264,37 @@ int main(int argc, char **argv)
             }
             if (events[n].data.fd == fd_in)
             {
-                if ((nread = read(fd_in, buff, 512)) > 0 && (buff[0] == 'q'))
-                    goto ending;
+                //if ((nread = read(fd_in, buff, 512)) > 0 && (buff[0] == 'q'))
+                    //goto ending;
                     //write(fd, buff, nread);
+                while((c = wgetch(main_win)) != KEY_F(1))
+                {
+                    switch(c)
+                    {
+                        case KEY_DOWN:
+                            menu_driver(my_menu, REQ_DOWN_ITEM);
+                            break;
+                        case KEY_UP:
+                            menu_driver(my_menu, REQ_UP_ITEM);
+                            break;
+                        case KEY_NPAGE:
+                            menu_driver(my_menu, REQ_SCR_DPAGE);
+                            break;
+                        case KEY_PPAGE:
+                            menu_driver(my_menu, REQ_SCR_UPAGE);
+                            break;
+                        case 'q'
+                            goto ending;
+                    }
+                    wrefresh(main_win);
+                }
             }
         }
-        terminal_print(main_win, 1, 0);
+        unpost_menu(my_menu);
+        free_menu(my_menu);
+        for(i = 0; i < num_users + 1; ++i)
+                free_item(my_items[i]);
+        my_menu = terminal_print(main_win, 1, 0);
         wrefresh(main_win);
         wrefresh(my_win);
 

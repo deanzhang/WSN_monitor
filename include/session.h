@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <curses.h>
+#include <menu.h>
 #include "uthash.h"
 
 #define HEAD_SYNC 0xFE
