@@ -136,7 +136,7 @@ int phase(uint8_t *buff, int nread)
                     if (buff[i + 12] != 0xAA)
                     {
                         mvprintw(0, 20, "ERRORS:%d", ++error);
-                        mvprintw(LINES -1, 0, "ERRORS:Handshark not 0XAA");
+                        mvprintw(LINES -1, 0, "ERRORS:Handshark not 0XAA!");
                     }
                     break;
                 case 0x01:
@@ -158,10 +158,12 @@ int phase(uint8_t *buff, int nread)
                     if (buff[i + 12] != 0x88 || buff[i + 13] != 0x88)
                     {
                         mvprintw(0, 20, "ERRORS:%d", ++error);
-                        mvprintw(LINES -1, 0, "ERRORS:Acquire not 0X880X88");
+                        mvprintw(LINES -1, 0, "ERRORS:Acquire not 0X880X88!");
                     }
                     break;
                 default:
+                    mvprintw(0, 20, "ERRORS:%d", ++error);
+                    mvprintw(LINES -1, 0, "ERRORS:Type unkown!");
             }
             mvwprintw(my_win, 0, x, "Got msg:len:%d seq:%d type:%s\nFRM:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S)\nXOR:%02X\n", head->len, head->seq, (head->type >= 0x20)?msg_type[head->type - 29]:msg_type[head->type], head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum);
             refresh();
