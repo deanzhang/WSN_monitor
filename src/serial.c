@@ -133,7 +133,7 @@ int phase(uint8_t *buff, int nread)
             switch (head->type)
             {
                 case 0x00:
-                    if (buff[i + 12] != 0xAA)
+                    if (buff[i + 16] != 0xAA)
                     {
                         mvprintw(0, 20, "ERRORS:%d", ++error);
                         mvprintw(LINES -1, 0, "ERRORS:Handshark not 0XAA!");
@@ -143,8 +143,10 @@ int phase(uint8_t *buff, int nread)
                     //break; as the design want
                 case 0x02:
                     gettimeofday(&(s->tv_first), NULL);
+                    s->msg_count = 1;
+                    s->msg_lost = 0;
+                    parent = (msg_parent_t *)&buff[i + 16];
                     s->battery_state = parent->battery_state;
-                    parent = (msg_parent_t *)&buff[i + 12];
 
                     p = find_terminal(parent->long_addr);
                     if (p == NULL)
@@ -155,7 +157,7 @@ int phase(uint8_t *buff, int nread)
                     p->signal_lqi = parent->signal_lqi;
                     break;
                 case 0x20:
-                    if (buff[i + 12] != 0x88 || buff[i + 13] != 0x88)
+                    if (buff[i + 16] != 0x88 || buff[i + 17] != 0x88)
                     {
                         mvprintw(0, 20, "ERRORS:%d", ++error);
                         mvprintw(LINES -1, 0, "ERRORS:Acquire not 0X880X88!");
