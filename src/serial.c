@@ -89,7 +89,8 @@ int phase(uint8_t *buff, int nread)
     int respon_flag = 0;
     msg_head_t *head = NULL;
     msg_tail_t *tail = NULL;
-    terminal_t *s;
+    msg_parent_t *parent = NULL;
+    terminal_t *s, *p;
     getyx(my_win, y, x);
     for (i = 0; i < nread; ++i)
     {
@@ -128,6 +129,39 @@ int phase(uint8_t *buff, int nread)
                     s->msg_lost += lost;
                 }
                 s->seq = head->seq;
+            }
+            switch (head->type)
+            {
+                case 0x00:
+                    if (buff[i + 12] != 0xAA)
+                    {
+                        mvprintw(0, 20, "ERRORS:%d", ++error);
+                        mvprintw(LINES -1, 0, "ERRORS:Handshark not 0XAA");
+                    }
+                    break;
+                case 0x01:
+                    //break; as the design want
+                case 0x02:
+                    gettimeofday(&(s->tv_first), NULL);
+                    s->battery_state = parent->battery_state;
+                    parent = (msg_parent_t *)&buff[i + 12];
+
+                    p = find_terminal(parent->long_addr);
+                    if (p == NULL)
+                    {
+                        p = new_terminal(parent->long_addr, parent->temp_addr, head->seq);
+                        p->type = TYPE_ROUTE;
+                    }
+                    p->signal_lqi = parent->signal_lqi;
+                    break;
+                case 0x20:
+                    if (buff[i + 12] != 0x88 || buff[i + 13] != 0x88)
+                    {
+                        mvprintw(0, 20, "ERRORS:%d", ++error);
+                        mvprintw(LINES -1, 0, "ERRORS:Acquire not 0X880X88");
+                    }
+                    break;
+                default:
             }
             mvwprintw(my_win, 0, x, "Got msg:len:%d seq:%d type:%s\nFRM:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X(L)--%04X(S)\nXOR:%02X\n", head->len, head->seq, (head->type >= 0x20)?msg_type[head->type - 29]:msg_type[head->type], head->long_addr[0], head->long_addr[1], head->long_addr[2], head->long_addr[3], head->long_addr[4], head->long_addr[5], head->long_addr[6], head->long_addr[7], head->temp_addr, tail->xor_sum);
             refresh();

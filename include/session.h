@@ -55,6 +55,13 @@ typedef struct msg_head
     uint16_t    temp_addr;
 } msg_head_t;
 
+typedef struct msg_parent
+{
+    uint8_t     long_addr[8];
+    uint16_t    temp_addr;
+    uint8_t     signal_lqi;
+    uint8_t     battery_state;
+} msg_parent_t;
 
 typedef struct  msg_tail
 {
