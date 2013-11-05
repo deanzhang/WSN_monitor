@@ -12,7 +12,8 @@
 WINDOW *my_win;
 WINDOW *main_win;
 extern unsigned int num_users;
-extern ITEM **my_items;
+extern ITEM *my_items[256];
+extern MENU *my_menu;
 int error = 0;
 
 char *msg_type[] = {
@@ -193,7 +194,6 @@ int main(int argc, char **argv)
     uint8_t buff[512];
     char dev[20] ="/dev/ttyS1";
     int i;
-    MENU *my_menu = NULL;
 
     #define MAX_EVENTS 5
     struct epoll_event ev, events[MAX_EVENTS];
@@ -275,6 +275,14 @@ int main(int argc, char **argv)
     wattron(main_win, COLOR_PAIR(5));
     mvwprintw(main_win, 0, 0, "TEM-L_ADDR-S_ADDR-Name1-Name2-P_X-P_Y\tMSG-(SUM)-(LST)");
     wattroff(main_win, COLOR_PAIR(5));
+    my_menu = new_menu((ITEM **)my_items);
+    /* Set main window and sub window */
+    set_menu_win(my_menu, win);
+    set_menu_sub(my_menu, derwin(win, 6, 50, y, x));
+    //set_menu_format(my_menu, 5, 1);
+            
+    /* Set menu mark to the string " * " */
+    set_menu_mark(my_menu, "*");
     refresh();
 
     while(1)
@@ -329,7 +337,7 @@ int main(int argc, char **argv)
                 }
             }
         }
-        if(my_menu)
+        /*if(my_menu)
         {
             unpost_menu(my_menu);
             free_menu(my_menu);
@@ -339,9 +347,9 @@ int main(int argc, char **argv)
         {
             if(my_items[i])
                 free_item(my_items[i]);
-        }
+        }*/
         i = 0;
-        my_menu = terminal_print(main_win, 1, 0);
+        terminal_print(main_win, 1, 0);
         wrefresh(main_win);
         wrefresh(my_win);
 
