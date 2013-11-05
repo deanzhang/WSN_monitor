@@ -28,7 +28,8 @@ terminal_t *new_terminal(uint8_t long_addr[8], uint16_t short_addr, uint16_t seq
     s->msg_error = 0;
     s->msg_lost = 0;
     //HASH_ADD_STR(terminals, long_addr, s);
-    my_items[my_menu->nitems++] = new_item(s->name1, s->desc);
+    sprintf(s->desc, "%02X..%02X-%04X %6u %6u %d %d %d", s->long_addr[0], s->long_addr[7], s->short_addr, s->msg_count, s->msg_lost, s->signal_lqi, s->battery_state, (int)(s->tv_last.tv_sec - s->tv_first.tv_sec));
+    my_items[my_menu->nitems++]= new_item(s->name1, s->desc);
     my_items[my_menu->nitems] = (ITEM *)NULL;
     HASH_ADD(hh, terminals, long_addr, 8, s);
     return s;
@@ -63,10 +64,7 @@ MENU *terminal_print(WINDOW *win, int y, int x)
         sprintf(s->desc, "%02X..%02X-%04X %6u %6u %d %d %d", s->long_addr[0], s->long_addr[7], s->short_addr, s->msg_count, s->msg_lost, s->signal_lqi, s->battery_state, (int)(s->tv_last.tv_sec - s->tv_first.tv_sec));
         //wprintw(win, "%02X...%02X   %04x  %s  %s  %d   %d  %6u %6u %s %s\n", s->long_addr[0], s->long_addr[7], s->short_addr, s->name1, s->name2, s->pos_x, s->pos_y, s->msg_count, s->msg_lost, time_first, time_last);
     }
-    unpost_menu(my_menu);
-    post_menu(my_menu);
     return my_menu;
-    //return NULL;
 }
 
 int recv_printf(int y, int x, uint8_t *buff, int nread, chtype color)

@@ -15,6 +15,7 @@ extern unsigned int num_users;
 extern ITEM *my_items[256];
 extern MENU *my_menu;
 int error = 0;
+int new_session_flag = 0;
 
 char *msg_type[] = {
     "Handshark",
@@ -119,6 +120,7 @@ int phase(uint8_t *buff, int nread)
             if (s == NULL)
             {
                 s = new_terminal(head->long_addr, head->temp_addr, head->seq);
+                new_session_flag = 1;
             }
             else
             {
@@ -153,6 +155,7 @@ int phase(uint8_t *buff, int nread)
                     if (p == NULL)
                     {
                         p = new_terminal(parent->long_addr, parent->temp_addr, head->seq);
+                        new_session_flag = 1;
                         p->type = TYPE_ROUTE;
                     }
                     p->signal_lqi = parent->signal_lqi;
@@ -257,6 +260,8 @@ int main(int argc, char **argv)
 
     initscr();
     start_color();
+    cbreak();
+    noecho();
     init_pair(1, COLOR_RED, COLOR_BLACK);
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
     init_pair(3, COLOR_BLUE, COLOR_BLACK);
@@ -265,24 +270,26 @@ int main(int argc, char **argv)
 
     my_win = newwin(4, 40, (LINES - 10), (COLS - 40));
     main_win = newwin((LINES -15), (COLS - 41), 6, 0);
+    keypad(main_win, TRUE);
     //box(main_win, 0 , 0);
     //attron(COLOR_PAIR(5));
     printw("Welcome\n");
     mvhline(5, 0, ACS_HLINE, COLS);
     mvvline(6, (COLS - 41), ACS_VLINE, LINES -6);
     mvaddch(5, (COLS - 41), ACS_TTEE);
-    //attroff(COLOR_PAIR(5));
     wattron(main_win, COLOR_PAIR(5));
     mvwprintw(main_win, 0, 0, "TEM-L_ADDR-S_ADDR-Name1-Name2-P_X-P_Y\tMSG-(SUM)-(LST)");
     wattroff(main_win, COLOR_PAIR(5));
+    my_items[0] = new_item("        ", "-                                                  -");    
     my_menu = new_menu((ITEM **)my_items);
     /* Set main window and sub window */
-    set_menu_win(my_menu, win);
-    set_menu_sub(my_menu, derwin(win, 6, 50, y, x));
-    //set_menu_format(my_menu, 5, 1);
-            
+    set_menu_win(my_menu, main_win);
+    set_menu_sub(my_menu, derwin(main_win, 6, 50, 1, 0));
+    set_menu_format(my_menu, 5, 1);
+                
     /* Set menu mark to the string " * " */
     set_menu_mark(my_menu, "*");
+    post_menu(my_menu);
     refresh();
 
     while(1)
@@ -312,9 +319,9 @@ int main(int argc, char **argv)
             if (events[n].data.fd == fd_in)
             {
                 //if ((nread = read(fd_in, buff, 512)) > 0 && (buff[0] == 'q'))
-                    //goto ending;
                     //write(fd, buff, nread);
-                while((i = wgetch(main_win)) != KEY_F(1))
+                //while((i = wgetch(main_win)) != KEY_F(1))
+                if((i = wgetch(main_win)) != KEY_F(1))
                 {
                     switch(i)
                     {
@@ -332,24 +339,23 @@ int main(int argc, char **argv)
                             break;
                         case 'q':
                             goto ending;
+                            break;
+                        default:
+           mvprintw(LINES - 6, 0, "POST_MENU error! %x", i);
                     }
                     wrefresh(main_win);
                 }
             }
         }
-        /*if(my_menu)
-        {
-            unpost_menu(my_menu);
-            free_menu(my_menu);
-        }
-        if(my_items)
-        for(i = 0; i < num_users + 1; ++i)
-        {
-            if(my_items[i])
-                free_item(my_items[i]);
-        }*/
         i = 0;
         terminal_print(main_win, 1, 0);
+        unpost_menu(my_menu);
+        if (new_session_flag == 1)
+        {
+        set_menu_format(my_menu, 5, 1);
+            new_session_flag = 0;
+        }
+        post_menu(my_menu);
         wrefresh(main_win);
         wrefresh(my_win);
 
