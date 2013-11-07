@@ -30,8 +30,9 @@ terminal_t *new_terminal(uint8_t long_addr[8], uint16_t short_addr, uint16_t seq
     sprintf(s->desc, "%02X..%02X-%04X %6u %6u %6d %6d %6d", s->long_addr[0], s->long_addr[7], s->short_addr, s->msg_count, s->msg_lost, s->signal_lqi, s->battery_state, (int)(s->tv_last.tv_sec - s->tv_first.tv_sec));
     if (num_users == 0)
        free_item(my_items[0]);
-    my_items[num_users++]= new_item(s->name1, s->desc);
-    my_items[num_users] = (ITEM *)NULL;
+    my_items[num_users]= new_item(s->name1, s->desc);
+    set_item_userptr(my_items[num_users], s);
+    my_items[++num_users] = (ITEM *)NULL;
     if (num_users != 1)
         my_menu->nitems++;
     HASH_ADD(hh, terminals, long_addr, 8, s);

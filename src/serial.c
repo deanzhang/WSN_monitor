@@ -11,6 +11,9 @@
 
 WINDOW *my_win;
 WINDOW *main_win;
+WINDOW *der_win;
+WINDOW *panel_win;
+PANEL  *my_panel[3];
 extern unsigned int num_users;
 extern ITEM *my_items[256];
 extern MENU *my_menu;
@@ -196,7 +199,9 @@ int main(int argc, char **argv)
     int baud_rate = 115200;
     uint8_t buff[512];
     char dev[20] ="/dev/ttyS1";
-    int i;
+    int i, hide = TRUE;
+    ITEM *cur;
+    terminal_t *se = NULL;
 
     #define MAX_EVENTS 5
     struct epoll_event ev, events[MAX_EVENTS];
@@ -270,7 +275,12 @@ int main(int argc, char **argv)
 
     my_win = newwin(4, 40, (LINES - 10), (COLS - 40));
     main_win = newwin((LINES -15), (COLS - 41), 6, 0);
+    panel_win = newwin(20, 40, 10, 30);
     keypad(main_win, TRUE);
+    box(panel_win, 0 , 0);
+
+    my_panel[0] = new_panel(my_win);
+    my_panel[1] = new_panel(main_win);
     //box(main_win, 0 , 0);
     //attron(COLOR_PAIR(5));
     printw("Welcome\n");
@@ -280,6 +290,9 @@ int main(int argc, char **argv)
     wattron(main_win, COLOR_PAIR(5));
     mvwprintw(main_win, 0, 0, "TEM-L_ADDR-S_ADDR-Name1-Name2-P_X-P_Y\tMSG-(SUM)-(LST)");
     wattroff(main_win, COLOR_PAIR(5));
+    my_panel[2] = new_panel(panel_win);
+    hide_panel(my_panel[2]);
+    update_panels();
     my_items[0] = new_item("        ", "-                                                  -");    
     my_menu = new_menu((ITEM **)my_items);
     /* Set main window and sub window */
@@ -290,7 +303,7 @@ int main(int argc, char **argv)
     /* Set menu mark to the string " * " */
     set_menu_mark(my_menu, "*");
     post_menu(my_menu);
-    refresh();
+    doupdate();
 
     while(1)
     {
@@ -321,7 +334,7 @@ int main(int argc, char **argv)
                 //if ((nread = read(fd_in, buff, 512)) > 0 && (buff[0] == 'q'))
                     //write(fd, buff, nread);
                 //while((i = wgetch(main_win)) != KEY_F(1))
-                if((i = wgetch(main_win)) != KEY_F(1))
+                if((hide == TRUE) && (i = wgetch(main_win)) != -1)
                 {
                     switch(i)
                     {
@@ -337,27 +350,53 @@ int main(int argc, char **argv)
                         case KEY_PPAGE:
                             menu_driver(my_menu, REQ_SCR_UPAGE);
                             break;
+                        case 10:
+                            show_panel(my_panel[2]);
+                            hide = FALSE;
+                            keypad(main_win, FALSE);
+                            keypad(panel_win, TRUE);
+                            break;
+                        case 0x1b:
                         case 'q':
                             goto ending;
                             break;
                         default:
            mvprintw(LINES - 6, 0, "POST_MENU error! %x", i);
                     }
-                    wrefresh(main_win);
+                    cur = current_item(my_menu);
+                    se = (terminal_t *)item_userptr(cur);
+                }
+                if((hide == FALSE) && (i = wgetch(panel_win)) != -1)
+                {
+                    switch(i)
+                    {
+                        case 0x1b:
+                        case 'q':
+                            hide_panel(my_panel[2]);
+                            mvvline(6, (COLS - 41), ACS_VLINE, LINES -6);
+                            keypad(panel_win, FALSE);
+                            keypad(main_win, TRUE);
+                            hide = TRUE;
+                            break;
+                        default:
+           mvprintw(LINES - 4, 0, "POST_MENU panel error! %x", i);
+                    }
                 }
             }
         }
         i = 0;
-        terminal_print(main_win, 1, 0);
         unpost_menu(my_menu);
+        if (hide == FALSE && se != NULL)
+            mvwprintw(panel_win, 2, 2, "%02X..%02X N1:%s,N2:%s %d %d %6u", se->long_addr[0], se->long_addr[7], se->name1, se->name2, se->signal_lqi, se->battery_state, se->msg_count);
+        terminal_print(main_win, 1, 0);
         if (new_session_flag == 1)
         {
         set_menu_format(my_menu, 5, 1);
             new_session_flag = 0;
         }
         post_menu(my_menu);
-        wrefresh(main_win);
-        wrefresh(my_win);
+        update_panels();
+        doupdate();
 
     }
 ending:
