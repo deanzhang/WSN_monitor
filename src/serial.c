@@ -312,6 +312,10 @@ int main(int argc, char **argv)
         set_field_back(field[i], A_UNDERLINE);
         field_opts_off(field[i], O_AUTOSKIP); 
     }
+    set_field_type(field[1], TYPE_ALNUM, 2);
+    set_field_type(field[2], TYPE_ALNUM, 2);
+    set_field_type(field[4], TYPE_INTEGER, 1, 0, 5000);
+    set_field_type(field[5], TYPE_INTEGER, 1, 0, 5000);
     field[N_FIELDS - 1] = NULL;
     my_form = new_form(field);
 
@@ -432,13 +436,15 @@ int main(int argc, char **argv)
                             sprintf(se->name1, "%s", field_buffer(field[1], 0));
                             sprintf(se->name2, "%s", field_buffer(field[2], 0));
                         case 0x1b:
-                        //case 'q':
                             unpost_form(my_form);
                             hide_panel(my_panel[2]);
                             mvvline(6, (COLS - 41), ACS_VLINE, LINES -6);
                             keypad(panel_win, FALSE);
                             keypad(main_win, TRUE);
                             hide = TRUE;
+                            break;
+                        case KEY_BACKSPACE:
+                            form_driver(my_form, REQ_DEL_PREV);
                             break;
                         case KEY_DOWN:
                             form_driver(my_form, REQ_NEXT_FIELD);
@@ -451,7 +457,6 @@ int main(int argc, char **argv)
                         default:
                             /* If this is a normal character, it gets */
                             /* Printed                */    
-                            //mvprintw(LINES - 2, 0, "POST_ error! %x", i);
                             form_driver(my_form, i);
                             break;
                     }
