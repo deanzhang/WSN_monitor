@@ -11,15 +11,14 @@
 
 WINDOW *my_win;
 WINDOW *main_win;
-WINDOW *der_win;
 WINDOW *panel_win;
 PANEL  *my_panel[3];
 
-#define STARTX 15
-#define STARTY 4
+#define STARTX 10
+#define STARTY 1
 #define WIDTH 25
 
-#define N_FIELDS 6
+#define N_FIELDS 7
 
 FIELD *field[N_FIELDS];
 FORM  *my_form;
@@ -304,7 +303,9 @@ int main(int argc, char **argv)
     init_pair(3, COLOR_BLUE, COLOR_BLACK);
     init_pair(4, COLOR_CYAN, COLOR_BLACK);
     init_pair(5, COLOR_BLACK, COLOR_WHITE);
-    for(i = 0; i < N_FIELDS - 1; ++i)
+    field[0] = new_field(1, WIDTH, STARTY, STARTX, 0, 0);
+    field_opts_off(field[0], O_ACTIVE);
+    for(i = 1; i < N_FIELDS - 1; ++i)
     {
         field[i] = new_field(1, WIDTH, STARTY + i * 2, STARTX, 0, 0);
         set_field_back(field[i], A_UNDERLINE);
@@ -332,7 +333,7 @@ int main(int argc, char **argv)
     wattroff(main_win, COLOR_PAIR(5));
 
     set_form_win(my_form, panel_win);
-    set_form_sub(my_form, derwin(panel_win, 7, 20, 2, 2));
+    set_form_sub(my_form, derwin(panel_win, 15, 36, 3, 2));
     print_in_middle(panel_win, 1, 14, 8, "Terminal info", COLOR_PAIR(2));
 
     my_panel[2] = new_panel(panel_win);
@@ -381,6 +382,8 @@ int main(int argc, char **argv)
                 //while((i = wgetch(main_win)) != KEY_F(1))
                 if((hide == TRUE) && (i = wgetch(main_win)) != -1)
                 {
+                    cur = current_item(my_menu);
+                    se = (terminal_t *)item_userptr(cur);
                     switch(i)
                     {
                         case KEY_DOWN:
@@ -401,6 +404,12 @@ int main(int argc, char **argv)
                             hide = FALSE;
                             keypad(main_win, FALSE);
                             keypad(panel_win, TRUE);
+            set_field_buffer(field[5], 0, se->name1);
+            set_field_buffer(field[1], 0, se->name2);
+            set_field_buffer(field[2], 0, "type");
+            set_field_buffer(field[3], 0, "pos_x");
+            set_field_buffer(field[4], 0, "pos_y");
+            form_driver(my_form, REQ_END_LINE);
                             break;
                         case 0x1b:
                         case 'q':
@@ -409,8 +418,6 @@ int main(int argc, char **argv)
                         default:
                             mvprintw(LINES - 6, 0, "POST_MENU error! %x", i);
                     }
-                    cur = current_item(my_menu);
-                    se = (terminal_t *)item_userptr(cur);
                 }
                 if((hide == FALSE) && (i = wgetch(panel_win)) != -1)
                 {
@@ -436,23 +443,20 @@ int main(int argc, char **argv)
                         default:
                             /* If this is a normal character, it gets */
                             /* Printed                */    
-                            form_driver(my_form, ch);
+                            //mvprintw(LINES - 2, 0, "POST_ error! %x", i);
+                            form_driver(my_form, i);
                             break;
                     }
                 }
             }
         }
-        i = 0;
-        unpost_menu(my_menu);
         if (hide == FALSE && se != NULL)
         {
-            mvwprintw(panel_win, 2, 2, "%02X..%02X N1:%s,N2:%s %d %d %6u", se->long_addr[0], se->long_addr[7], se->name1, se->name2, se->signal_lqi, se->battery_state, se->msg_count);
-            set_field_buffer(field[0], 0, se->name1);
-            set_field_buffer(field[1], 1, se->name2);
-            set_field_buffer(field[2], 2, "type");
-            set_field_buffer(field[3], 3, "pos_x");
-            set_field_buffer(field[4], 4, "pos_y");
+            //mvwprintw(panel_win, 2, 2, "%02X..%02X N1:%s,N2:%s %d %d %6u", se->long_addr[0], se->long_addr[7], se->name1, se->name2, se->signal_lqi, se->battery_state, se->msg_count);
+            sprintf((char *)buff, "%02x:%02x:%02x...%02x %u", se->long_addr[0], se->long_addr[1], se->long_addr[2], se->long_addr[7], se->msg_count);
+            set_field_buffer(field[0], 0, (char *)buff);
         }
+        unpost_menu(my_menu);
         terminal_print(main_win, 1, 0);
         if (new_session_flag == 1)
         {
