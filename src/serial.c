@@ -230,6 +230,7 @@ int main(int argc, char **argv)
     int baud_rate = 115200;
     uint8_t buff[512];
     char dev[20] ="/dev/ttyS1";
+    char temp_buf[256] = {0};
     int i, hide = TRUE;
     ITEM *cur;
     terminal_t *se = NULL;
@@ -339,7 +340,7 @@ int main(int argc, char **argv)
     my_panel[2] = new_panel(panel_win);
     hide_panel(my_panel[2]);
     update_panels();
-    my_items[0] = new_item("        ", "-                                                  -");    
+    my_items[0] = new_item("        ", "-                                                  -");
     my_menu = new_menu((ITEM **)my_items);
     /* Set main window and sub window */
     set_menu_win(my_menu, main_win);
@@ -404,12 +405,16 @@ int main(int argc, char **argv)
                             hide = FALSE;
                             keypad(main_win, FALSE);
                             keypad(panel_win, TRUE);
-            set_field_buffer(field[5], 0, se->name1);
-            set_field_buffer(field[1], 0, se->name2);
-            set_field_buffer(field[2], 0, "type");
-            set_field_buffer(field[3], 0, "pos_x");
-            set_field_buffer(field[4], 0, "pos_y");
-            form_driver(my_form, REQ_END_LINE);
+                            sprintf(temp_buf, "%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", se->long_addr[0], se->long_addr[1], se->long_addr[2], se->long_addr[3], se->long_addr[4], se->long_addr[5], se->long_addr[6], se->long_addr[7]);
+                            set_field_buffer(field[0], 0, temp_buf);
+                            set_field_buffer(field[1], 0, se->name1);
+                            set_field_buffer(field[2], 0, se->name2);
+                            set_field_buffer(field[3], 0, "type");
+                            sprintf(temp_buf, "pos_x:%d", se->pos_x);
+                            set_field_buffer(field[4], 0, temp_buf);
+                            sprintf(temp_buf, "pos_y:%d", se->pos_y);
+                            set_field_buffer(field[5], 0, temp_buf);
+                            form_driver(my_form, REQ_END_LINE);
                             break;
                         case 0x1b:
                         case 'q':
@@ -423,6 +428,9 @@ int main(int argc, char **argv)
                 {
                     switch(i)
                     {
+                        case 10:
+                            sprintf(se->name1, "%s", field_buffer(field[1], 0));
+                            sprintf(se->name2, "%s", field_buffer(field[2], 0));
                         case 0x1b:
                         //case 'q':
                             unpost_form(my_form);
@@ -460,7 +468,7 @@ int main(int argc, char **argv)
         terminal_print(main_win, 1, 0);
         if (new_session_flag == 1)
         {
-        set_menu_format(my_menu, 5, 1);
+            set_menu_format(my_menu, 5, 1);
             new_session_flag = 0;
         }
         post_menu(my_menu);
