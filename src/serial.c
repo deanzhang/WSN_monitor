@@ -14,6 +14,16 @@ WINDOW *main_win;
 WINDOW *der_win;
 WINDOW *panel_win;
 PANEL  *my_panel[3];
+
+#define STARTX 15
+#define STARTY 4
+#define WIDTH 25
+
+#define N_FIELDS 6
+
+FIELD *field[N_FIELDS];
+FORM  *my_form;
+
 extern unsigned int num_users;
 extern ITEM *my_items[256];
 extern MENU *my_menu;
@@ -189,6 +199,28 @@ int phase(uint8_t *buff, int nread)
     return -1;
 }
 
+void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color)
+{   int length, x, y;
+    float temp;
+
+    if(win == NULL)
+        win = stdscr;
+    getyx(win, y, x);
+    if(startx != 0)
+        x = startx;
+    if(starty != 0)
+        y = starty;
+    if(width == 0)
+        width = 80;
+
+    length = strlen(string);
+    temp = (width - length)/ 2;
+    x = startx + (int)temp;
+    wattron(win, color);
+    mvwprintw(win, y, x, "%s", string);
+    wattroff(win, color);
+    refresh();
+}
 
 int main(int argc, char **argv)
 {
@@ -272,6 +304,14 @@ int main(int argc, char **argv)
     init_pair(3, COLOR_BLUE, COLOR_BLACK);
     init_pair(4, COLOR_CYAN, COLOR_BLACK);
     init_pair(5, COLOR_BLACK, COLOR_WHITE);
+    for(i = 0; i < N_FIELDS - 1; ++i)
+    {
+        field[i] = new_field(1, WIDTH, STARTY + i * 2, STARTX, 0, 0);
+        set_field_back(field[i], A_UNDERLINE);
+        field_opts_off(field[i], O_AUTOSKIP); 
+    }
+    field[N_FIELDS - 1] = NULL;
+    my_form = new_form(field);
 
     my_win = newwin(4, 40, (LINES - 10), (COLS - 40));
     main_win = newwin((LINES -15), (COLS - 41), 6, 0);
@@ -290,6 +330,11 @@ int main(int argc, char **argv)
     wattron(main_win, COLOR_PAIR(5));
     mvwprintw(main_win, 0, 0, "TEM-L_ADDR-S_ADDR-Name1-Name2-P_X-P_Y\tMSG-(SUM)-(LST)");
     wattroff(main_win, COLOR_PAIR(5));
+
+    set_form_win(my_form, panel_win);
+    set_form_sub(my_form, derwin(panel_win, 7, 20, 2, 2));
+    print_in_middle(panel_win, 1, 0, 8, "My Form", COLOR_PAIR(2));
+
     my_panel[2] = new_panel(panel_win);
     hide_panel(my_panel[2]);
     update_panels();
@@ -352,6 +397,7 @@ int main(int argc, char **argv)
                             break;
                         case 10:
                             show_panel(my_panel[2]);
+                            post_form(my_form);
                             hide = FALSE;
                             keypad(main_win, FALSE);
                             keypad(panel_win, TRUE);
@@ -361,7 +407,7 @@ int main(int argc, char **argv)
                             goto ending;
                             break;
                         default:
-           mvprintw(LINES - 6, 0, "POST_MENU error! %x", i);
+                            mvprintw(LINES - 6, 0, "POST_MENU error! %x", i);
                     }
                     cur = current_item(my_menu);
                     se = (terminal_t *)item_userptr(cur);
@@ -372,6 +418,7 @@ int main(int argc, char **argv)
                     {
                         case 0x1b:
                         case 'q':
+                            unpost_form(my_form);
                             hide_panel(my_panel[2]);
                             mvvline(6, (COLS - 41), ACS_VLINE, LINES -6);
                             keypad(panel_win, FALSE);
@@ -379,7 +426,7 @@ int main(int argc, char **argv)
                             hide = TRUE;
                             break;
                         default:
-           mvprintw(LINES - 4, 0, "POST_MENU panel error! %x", i);
+                            mvprintw(LINES - 4, 0, "POST_MENU panel error! %x", i);
                     }
                 }
             }
@@ -387,7 +434,14 @@ int main(int argc, char **argv)
         i = 0;
         unpost_menu(my_menu);
         if (hide == FALSE && se != NULL)
+        {
             mvwprintw(panel_win, 2, 2, "%02X..%02X N1:%s,N2:%s %d %d %6u", se->long_addr[0], se->long_addr[7], se->name1, se->name2, se->signal_lqi, se->battery_state, se->msg_count);
+            set_field_buffer(field[0], 0, se->name1);
+            set_field_buffer(field[1], 1, se->name2);
+            set_field_buffer(field[2], 2, "type");
+            set_field_buffer(field[3], 3, "pos_x");
+            set_field_buffer(field[4], 4, "pos_y");
+        }
         terminal_print(main_win, 1, 0);
         if (new_session_flag == 1)
         {

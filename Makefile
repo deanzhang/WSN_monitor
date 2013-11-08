@@ -1,6 +1,6 @@
 CC = gcc
 INCLUDE = -I./include/
-LIBS = -lncurses -lmenu -lpanel
+LIBS = -lncurses -lmenu -lpanel -lform
 INSTALL_DIR = /usr/bin
 EXEC = wsn_monitor
 

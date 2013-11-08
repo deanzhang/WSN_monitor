@@ -12,6 +12,7 @@
 #include <curses.h>
 #include <menu.h>
 #include <panel.h>
+#include <form.h>
 #include "uthash.h"
 
 #define HEAD_SYNC 0xFE
