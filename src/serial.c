@@ -333,7 +333,7 @@ int main(int argc, char **argv)
 
     set_form_win(my_form, panel_win);
     set_form_sub(my_form, derwin(panel_win, 7, 20, 2, 2));
-    print_in_middle(panel_win, 1, 0, 8, "My Form", COLOR_PAIR(2));
+    print_in_middle(panel_win, 1, 14, 8, "Terminal info", COLOR_PAIR(2));
 
     my_panel[2] = new_panel(panel_win);
     hide_panel(my_panel[2]);
@@ -417,7 +417,7 @@ int main(int argc, char **argv)
                     switch(i)
                     {
                         case 0x1b:
-                        case 'q':
+                        //case 'q':
                             unpost_form(my_form);
                             hide_panel(my_panel[2]);
                             mvvline(6, (COLS - 41), ACS_VLINE, LINES -6);
@@ -425,8 +425,19 @@ int main(int argc, char **argv)
                             keypad(main_win, TRUE);
                             hide = TRUE;
                             break;
+                        case KEY_DOWN:
+                            form_driver(my_form, REQ_NEXT_FIELD);
+                            form_driver(my_form, REQ_END_LINE);
+                            break;
+                        case KEY_UP:
+                            form_driver(my_form, REQ_PREV_FIELD);
+                            form_driver(my_form, REQ_END_LINE);
+                            break;
                         default:
-                            mvprintw(LINES - 4, 0, "POST_MENU panel error! %x", i);
+                            /* If this is a normal character, it gets */
+                            /* Printed                */    
+                            form_driver(my_form, ch);
+                            break;
                     }
                 }
             }
