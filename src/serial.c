@@ -234,6 +234,12 @@ int main(int argc, char **argv)
     int i, hide = TRUE;
     ITEM *cur;
     terminal_t *se = NULL;
+    char *valuelist[4] = {
+    "NORMAL",
+    "ROUTE",
+    "MOVEABLE",
+    NULL
+    };
 
     #define MAX_EVENTS 5
     struct epoll_event ev, events[MAX_EVENTS];
@@ -314,6 +320,7 @@ int main(int argc, char **argv)
     }
     set_field_type(field[1], TYPE_ALNUM, 2);
     set_field_type(field[2], TYPE_ALNUM, 2);
+    set_field_type(field[3], TYPE_ENUM, valuelist, FALSE, TRUE);
     set_field_type(field[4], TYPE_INTEGER, 1, 0, 5000);
     set_field_type(field[5], TYPE_INTEGER, 1, 0, 5000);
     field[N_FIELDS - 1] = NULL;
