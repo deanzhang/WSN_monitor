@@ -26,24 +26,25 @@ static struct {
     int w;
     int y;
     int x;
+    const char *title;
 } field_attr[N_FIELDS] = {
     {
-        1, 20, 1, 10,
+        1, 20, 1, 10, "Long Addr:"
     },
     {
-        1, 20, 3, 10,
+        1, 20, 3, 10, "Name1:"
     },
     {
-        1, 20, 5, 10,
+        1, 20, 5, 10, "Name2:"
     },
     {
-        1, 20, 7, 10,
+        1, 20, 7, 10, "Type:"
     },
     {
-        1, 8, 9, 10,
+        1, 8, 9, 10, "Positon X:"
     },
     {
-        1, 8, 9, 18,
+        1, 8, 9, 22, "Y:"
     },
     {
         1, 20, 1, 10,
@@ -340,22 +341,7 @@ int main(int argc, char **argv)
     init_pair(3, COLOR_BLUE, COLOR_BLACK);
     init_pair(4, COLOR_CYAN, COLOR_BLACK);
     init_pair(5, COLOR_BLACK, COLOR_WHITE);
-    field[0] = new_field(field_attr[0].h, field_attr[0].w, field_attr[0].y, field_attr[0].x, 0, 0);
-    field_opts_off(field[0], O_ACTIVE);
-    for(i = 1; i < N_FIELDS - 1; ++i)
-    {
-        field[i] = new_field(field_attr[i].h, field_attr[i].w, field_attr[i].y, field_attr[i].x, 0, 0);
-        set_field_back(field[i], A_UNDERLINE);
-        field_opts_off(field[i], O_AUTOSKIP);
-    }
-    set_field_type(field[1], TYPE_ALNUM, 4);
-    set_field_type(field[2], TYPE_ALNUM, 4);
-    set_field_type(field[3], TYPE_ENUM, valuelist, FALSE, TRUE);
-    set_field_type(field[4], TYPE_INTEGER, 1, 0, 5000);
-    set_field_type(field[5], TYPE_INTEGER, 1, 0, 5000);
-    field[N_FIELDS - 1] = NULL;
-    my_form = new_form(field);
-
+    
     my_win = newwin(4, 40, (LINES - 10), (COLS - 40));
     main_win = newwin((LINES -15), (COLS - 41), 6, 0);
     panel_win = newwin(20, 40, 10, 30);
@@ -373,6 +359,23 @@ int main(int argc, char **argv)
     wattron(main_win, COLOR_PAIR(5));
     mvwprintw(main_win, 0, 0, "TEM-L_ADDR-S_ADDR-Name1-Name2-P_X-P_Y\tMSG-(SUM)-(LST)");
     wattroff(main_win, COLOR_PAIR(5));
+
+    field[0] = new_field(field_attr[0].h, field_attr[0].w, field_attr[0].y, field_attr[0].x, 0, 0);
+    field_opts_off(field[0], O_ACTIVE);
+    for(i = 1; i < N_FIELDS - 1; ++i)
+    {
+        field[i] = new_field(field_attr[i].h, field_attr[i].w, field_attr[i].y, field_attr[i].x, 0, 0);
+        mvwprintw(panel_win, field_attr[i].y, field_attr[i].x, field_attr[i].title);
+        set_field_back(field[i], A_UNDERLINE);
+        field_opts_off(field[i], O_AUTOSKIP);
+    }
+    set_field_type(field[1], TYPE_ALNUM, 4);
+    set_field_type(field[2], TYPE_ALNUM, 4);
+    set_field_type(field[3], TYPE_ENUM, valuelist, FALSE, TRUE);
+    set_field_type(field[4], TYPE_INTEGER, 1, 0, 5000);
+    set_field_type(field[5], TYPE_INTEGER, 1, 0, 5000);
+    field[N_FIELDS - 1] = NULL;
+    my_form = new_form(field);
 
     set_form_win(my_form, panel_win);
     set_form_sub(my_form, derwin(panel_win, 15, 36, 3, 2));
