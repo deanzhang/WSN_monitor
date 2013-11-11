@@ -14,12 +14,7 @@ WINDOW *main_win;
 WINDOW *panel_win;
 PANEL  *my_panel[3];
 
-#define STARTX 10
-#define STARTY 1
-#define WIDTH 25
-
 #define N_FIELDS 7
-
 
 static struct {
     int h;
@@ -29,22 +24,22 @@ static struct {
     const char *title;
 } field_attr[N_FIELDS] = {
     {
-        1, 20, 1, 10, "Long Addr:"
+        1, 24, 1, 0, "Long Addr:"
     },
     {
-        1, 20, 3, 10, "Name1:"
+        1, 18, 3, 2, "1st Name:"
     },
     {
-        1, 20, 5, 10, "Name2:"
+        1, 18, 5, 2, "2rd Name:"
     },
     {
-        1, 20, 7, 10, "Type:"
+        1, 18, 7, 2, "TRM Type:"
     },
     {
-        1, 8, 9, 10, "Positon X:"
+        1, 8, 9, 2, "Positon:"
     },
     {
-        1, 8, 9, 22, "Y:"
+        1, 8, 9, 12, ""
     },
     {
         1, 20, 1, 10,
@@ -361,11 +356,12 @@ int main(int argc, char **argv)
     wattroff(main_win, COLOR_PAIR(5));
 
     field[0] = new_field(field_attr[0].h, field_attr[0].w, field_attr[0].y, field_attr[0].x, 0, 0);
+    mvwprintw(panel_win, field_attr[0].y + 3, field_attr[0].x + 2, field_attr[0].title);
     field_opts_off(field[0], O_ACTIVE);
     for(i = 1; i < N_FIELDS - 1; ++i)
     {
         field[i] = new_field(field_attr[i].h, field_attr[i].w, field_attr[i].y, field_attr[i].x, 0, 0);
-        mvwprintw(panel_win, field_attr[i].y, field_attr[i].x, field_attr[i].title);
+        mvwprintw(panel_win, field_attr[i].y + 3, field_attr[i].x + 2, field_attr[i].title);
         set_field_back(field[i], A_UNDERLINE);
         field_opts_off(field[i], O_AUTOSKIP);
     }
@@ -378,7 +374,7 @@ int main(int argc, char **argv)
     my_form = new_form(field);
 
     set_form_win(my_form, panel_win);
-    set_form_sub(my_form, derwin(panel_win, 15, 36, 3, 2));
+    set_form_sub(my_form, derwin(panel_win, 15, 26, 3, 13));
     print_in_middle(panel_win, 1, 14, 8, "Terminal info", COLOR_PAIR(2));
 
     my_panel[2] = new_panel(panel_win);
@@ -449,14 +445,14 @@ int main(int argc, char **argv)
                             hide = FALSE;
                             keypad(main_win, FALSE);
                             keypad(panel_win, TRUE);
-                            sprintf(temp_buf, "%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", se->long_addr[0], se->long_addr[1], se->long_addr[2], se->long_addr[3], se->long_addr[4], se->long_addr[5], se->long_addr[6], se->long_addr[7]);
+                            sprintf(temp_buf, "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", se->long_addr[0], se->long_addr[1], se->long_addr[2], se->long_addr[3], se->long_addr[4], se->long_addr[5], se->long_addr[6], se->long_addr[7]);
                             set_field_buffer(field[0], 0, temp_buf);
                             set_field_buffer(field[1], 0, se->name1);
                             set_field_buffer(field[2], 0, se->name2);
                             set_field_buffer(field[3], 0, "type");
-                            sprintf(temp_buf, "pos_x:%d", se->pos_x);
+                            sprintf(temp_buf, "x:%d", se->pos_x);
                             set_field_buffer(field[4], 0, temp_buf);
-                            sprintf(temp_buf, "pos_y:%d", se->pos_y);
+                            sprintf(temp_buf, "y:%d", se->pos_y);
                             set_field_buffer(field[5], 0, temp_buf);
                             form_driver(my_form, REQ_END_LINE);
                             break;
@@ -506,8 +502,8 @@ int main(int argc, char **argv)
         if (hide == FALSE && se != NULL)
         {
             //mvwprintw(panel_win, 2, 2, "%02X..%02X N1:%s,N2:%s %d %d %6u", se->long_addr[0], se->long_addr[7], se->name1, se->name2, se->signal_lqi, se->battery_state, se->msg_count);
-            sprintf(temp_buf, "%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", se->long_addr[0], se->long_addr[1], se->long_addr[2], se->long_addr[3], se->long_addr[4], se->long_addr[5], se->long_addr[6], se->long_addr[7]);
-            set_field_buffer(field[0], 0, temp_buf);
+            //sprintf(temp_buf, "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", se->long_addr[0], se->long_addr[1], se->long_addr[2], se->long_addr[3], se->long_addr[4], se->long_addr[5], se->long_addr[6], se->long_addr[7]);
+            //set_field_buffer(field[0], 0, temp_buf);
         }
         unpost_menu(my_menu);
         terminal_print(main_win, 1, 0);
