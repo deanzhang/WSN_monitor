@@ -23,7 +23,7 @@ typedef struct  terminal
     uint8_t     long_addr[8];
     uint16_t    short_addr;
     uint16_t    seq;
-    char        type[12];
+    char        type[20];
     char        name1[256];
     char        name2[256];
     char        desc[256];

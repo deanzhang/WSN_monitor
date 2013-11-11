@@ -194,7 +194,7 @@ int phase(uint8_t *buff, int nread)
                     {
                         p = new_terminal(parent->long_addr, parent->temp_addr, head->seq);
                         new_session_flag = 1;
-                        p->type = TYPE_ROUTE;
+                        sprintf(p->type, "ROUTE");
                     }
                     p->signal_lqi = parent->signal_lqi;
                     break;
@@ -469,6 +469,7 @@ int main(int argc, char **argv)
                     switch(i)
                     {
                         case 10:
+                            form_driver(my_form, REQ_VALIDATION);
                             sprintf(se->name1, "%s", field_buffer(field[1], 0));
                             sprintf(se->name2, "%s", field_buffer(field[2], 0));
                             sprintf(se->type, "%s", field_buffer(field[3], 0));
