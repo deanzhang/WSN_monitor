@@ -260,10 +260,11 @@ int main(int argc, char **argv)
     int i, hide = TRUE;
     ITEM *cur;
     terminal_t *se = NULL;
-    char *valuelist[4] = {
+    char *valuelist[5] = {
     "NORMAL",
     "ROUTE",
     "MOVEABLE",
+    "UNKOWN",
     NULL
     };
 
@@ -493,6 +494,12 @@ int main(int argc, char **argv)
                         case KEY_UP:
                             form_driver(my_form, REQ_PREV_FIELD);
                             form_driver(my_form, REQ_END_LINE);
+                            break;
+                        case KEY_LEFT:
+                            form_driver(my_form, REQ_PREV_CHOICE);
+                            break;
+                        case KEY_RIGHT:
+                            form_driver(my_form, REQ_NEXT_CHOICE);
                             break;
                         default:
                             /* If this is a normal character, it gets */
