@@ -449,10 +449,21 @@ int main(int argc, char **argv)
                             set_field_buffer(field[0], 0, temp_buf);
                             set_field_buffer(field[1], 0, se->name1);
                             set_field_buffer(field[2], 0, se->name2);
-                            set_field_buffer(field[3], 0, "type");
-                            sprintf(temp_buf, "x:%d", se->pos_x);
+                            if (s->type == TYPE_NORMAL)
+                            {
+                                set_field_buffer(field[3], 0, "NORMAL");
+                            }
+                            else if (s->type == TYPE_ROUTE)
+                            {
+                                set_field_buffer(field[3], 0, "ROUTE");
+                            }
+                            else
+                            {
+                                set_field_buffer(field[3], 0, "UNKOWN");
+                            }
+                            sprintf(temp_buf, "%d(x)", se->pos_x);
                             set_field_buffer(field[4], 0, temp_buf);
-                            sprintf(temp_buf, "y:%d", se->pos_y);
+                            sprintf(temp_buf, "%d(y)", se->pos_y);
                             set_field_buffer(field[5], 0, temp_buf);
                             form_driver(my_form, REQ_END_LINE);
                             break;
@@ -471,6 +482,8 @@ int main(int argc, char **argv)
                         case 10:
                             sprintf(se->name1, "%s", field_buffer(field[1], 0));
                             sprintf(se->name2, "%s", field_buffer(field[2], 0));
+                            se->pos_x = atoi(field_buffer(field[4], 0));
+                            se->pos_y = atoi(field_buffer(field[5], 0));
                         case 0x1b:
                             unpost_form(my_form);
                             hide_panel(my_panel[2]);
