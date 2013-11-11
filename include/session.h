@@ -18,17 +18,12 @@
 #define HEAD_SYNC 0xFE
 #define TAIL_SYNC 0xEF
 
-
-#define TYPE_RAW    0x00
-#define TYPE_ROUTE  0x01
-#define TYPE_NORMAL 0x02
-
 typedef struct  terminal
 {
     uint8_t     long_addr[8];
     uint16_t    short_addr;
     uint16_t    seq;
-    uint8_t     type;
+    char        type[12];
     char        name1[256];
     char        name2[256];
     char        desc[256];

@@ -14,8 +14,8 @@ terminal_t *new_terminal(uint8_t long_addr[8], uint16_t short_addr, uint16_t seq
         return NULL;
     memcpy(s->long_addr, long_addr, 8);
     s->short_addr = short_addr;
-    s->type = TYPE_RAW;
     s->seq = seq;
+    sprintf(s->type, "UNKOWN");
     sprintf(s->name1, "name1");
     sprintf(s->name2, "name2");
     s->pos_x = 0;

@@ -449,18 +449,7 @@ int main(int argc, char **argv)
                             set_field_buffer(field[0], 0, temp_buf);
                             set_field_buffer(field[1], 0, se->name1);
                             set_field_buffer(field[2], 0, se->name2);
-                            if (s->type == TYPE_NORMAL)
-                            {
-                                set_field_buffer(field[3], 0, "NORMAL");
-                            }
-                            else if (s->type == TYPE_ROUTE)
-                            {
-                                set_field_buffer(field[3], 0, "ROUTE");
-                            }
-                            else
-                            {
-                                set_field_buffer(field[3], 0, "UNKOWN");
-                            }
+                            set_field_buffer(field[3], 0, se->type);
                             sprintf(temp_buf, "%d(x)", se->pos_x);
                             set_field_buffer(field[4], 0, temp_buf);
                             sprintf(temp_buf, "%d(y)", se->pos_y);
@@ -482,6 +471,7 @@ int main(int argc, char **argv)
                         case 10:
                             sprintf(se->name1, "%s", field_buffer(field[1], 0));
                             sprintf(se->name2, "%s", field_buffer(field[2], 0));
+                            sprintf(se->type, "%s", field_buffer(field[3], 0));
                             se->pos_x = atoi(field_buffer(field[4], 0));
                             se->pos_y = atoi(field_buffer(field[5], 0));
                         case 0x1b:
