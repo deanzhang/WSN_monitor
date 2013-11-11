@@ -20,6 +20,36 @@ PANEL  *my_panel[3];
 
 #define N_FIELDS 7
 
+
+static struct {
+    int h;
+    int w;
+    int y;
+    int x;
+} field_attr[N_FIELDS] = {
+    {
+        1, 20, 1, 10,
+    },
+    {
+        1, 20, 3, 10,
+    },
+    {
+        1, 20, 5, 10,
+    },
+    {
+        1, 20, 7, 10,
+    },
+    {
+        1, 8, 9, 10,
+    },
+    {
+        1, 8, 9, 18,
+    },
+    {
+        1, 20, 1, 10,
+    }
+};
+
 FIELD *field[N_FIELDS];
 FORM  *my_form;
 
@@ -310,16 +340,16 @@ int main(int argc, char **argv)
     init_pair(3, COLOR_BLUE, COLOR_BLACK);
     init_pair(4, COLOR_CYAN, COLOR_BLACK);
     init_pair(5, COLOR_BLACK, COLOR_WHITE);
-    field[0] = new_field(1, WIDTH, STARTY, STARTX, 0, 0);
+    field[0] = new_field(field_attr[0].h, field_attr[0].w, field_attr[0].y, field_attr[0].x, 0, 0);
     field_opts_off(field[0], O_ACTIVE);
     for(i = 1; i < N_FIELDS - 1; ++i)
     {
-        field[i] = new_field(1, WIDTH, STARTY + i * 2, STARTX, 0, 0);
+        field[i] = new_field(field_attr[i].h, field_attr[i].w, field_attr[i].y, field_attr[i].x, 0, 0);
         set_field_back(field[i], A_UNDERLINE);
-        field_opts_off(field[i], O_AUTOSKIP); 
+        field_opts_off(field[i], O_AUTOSKIP);
     }
-    set_field_type(field[1], TYPE_ALNUM, 2);
-    set_field_type(field[2], TYPE_ALNUM, 2);
+    set_field_type(field[1], TYPE_ALNUM, 4);
+    set_field_type(field[2], TYPE_ALNUM, 4);
     set_field_type(field[3], TYPE_ENUM, valuelist, FALSE, TRUE);
     set_field_type(field[4], TYPE_INTEGER, 1, 0, 5000);
     set_field_type(field[5], TYPE_INTEGER, 1, 0, 5000);
@@ -473,8 +503,8 @@ int main(int argc, char **argv)
         if (hide == FALSE && se != NULL)
         {
             //mvwprintw(panel_win, 2, 2, "%02X..%02X N1:%s,N2:%s %d %d %6u", se->long_addr[0], se->long_addr[7], se->name1, se->name2, se->signal_lqi, se->battery_state, se->msg_count);
-            sprintf((char *)buff, "%02x:%02x:%02x...%02x %u", se->long_addr[0], se->long_addr[1], se->long_addr[2], se->long_addr[7], se->msg_count);
-            set_field_buffer(field[0], 0, (char *)buff);
+            sprintf(temp_buf, "%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", se->long_addr[0], se->long_addr[1], se->long_addr[2], se->long_addr[3], se->long_addr[4], se->long_addr[5], se->long_addr[6], se->long_addr[7]);
+            set_field_buffer(field[0], 0, temp_buf);
         }
         unpost_menu(my_menu);
         terminal_print(main_win, 1, 0);
