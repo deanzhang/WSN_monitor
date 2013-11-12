@@ -125,7 +125,7 @@ int phase(uint8_t *buff, int nread)
 {
     int i, tail_index = 0;
     int y, x;
-    uint32_t lost = 0;
+    uint16_t lost = 0;
     int respon_flag = 0;
     msg_head_t *head = NULL;
     msg_tail_t *tail = NULL;
