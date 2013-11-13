@@ -79,14 +79,7 @@ int set_speed(int fd, int speed)
         perror("SetupSerial 1");
         return(FALSE);
     }
-    options.c_cflag &= ~CSIZE;
-    //case 8:
-    options.c_cflag |= CS8;
-    //case 'n':
-    //case 'N':
-    options.c_cflag &= ~PARENB;
     options.c_iflag &= ~INPCK;
-    //case 1:
     options.c_cflag &= ~CSTOPB;
     options.c_cc[VTIME] = 150; // 15 seconds
     options.c_cc[VMIN] = 0;
@@ -102,6 +95,7 @@ int set_speed(int fd, int speed)
         }
         //tcflush(fd,TCIOFLUSH);
     }
+    cfmakeraw(&options);
     if (tcsetattr(fd,TCSANOW,&options) != 0)
     {
         perror("SetupSerial 3");
@@ -259,7 +253,7 @@ int main(int argc, char **argv)
     int nread;
     int baud_rate = 115200;
     uint8_t buff[512];
-    int buff_last = 0;
+    int buff_last = 0, buff_done;
     char dev[20] ="/dev/ttyS1";
     char temp_buf[256] = {0};
     int i, hide = TRUE;
@@ -417,16 +411,18 @@ int main(int argc, char **argv)
             {
                 if ((nread = read(fd, buff + buff_last, 512 - buff_last)) > 0)
                 {
+                    nread += buff_last;
                     if (nread > 20)
                         recv_printf(LINES - 4, 0, buff, nread, COLOR_PAIR(3));
                     if (nread > 0)
-                        buff_last = phase(buff, nread + buff_last);
-                    if (buff_last < nread)
+                        buff_done = phase(buff, nread);
+                    buff_last = nread - buff_done;
+                    if (buff_done < nread)
                     {
                         mvprintw(0, 30, "last ERRORS:%d", ++error);
-                        recv_printf(1, 20, buff + tail_index, nread - tail_index, COLOR_PAIR(1));
+                        recv_printf(1, 20, buff + buff_done, buff_last, COLOR_PAIR(1));
+                        memmove(buff, buff + buff_done, buff_last);
                     }
-                    buff_last = nread - buff_last;
                 }
             }
             if (events[n].data.fd == fd_in)
