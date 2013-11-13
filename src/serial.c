@@ -132,6 +132,10 @@ int phase(uint8_t *buff, int nread)
     msg_parent_t *parent = NULL;
     terminal_t *s, *p;
     getyx(my_win, y, x);
+    if (nread < 18)
+    {
+        return 0;
+    }
     for (i = 0; i < nread; ++i)
     {
         if (buff[i] == HEAD_SYNC)
@@ -216,12 +220,12 @@ int phase(uint8_t *buff, int nread)
             //return 0;
         }
     }
-    if (tail_index < nread)
+    /*if (tail_index < nread)
     {
         mvprintw(0, 20, "ERRORS:%d", ++error);
         recv_printf(1, 20, buff + tail_index, nread - tail_index, COLOR_PAIR(1));
-    }
-    return -1;
+    }*/
+    return tail_index;
 }
 
 void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color)
@@ -255,6 +259,7 @@ int main(int argc, char **argv)
     int nread;
     int baud_rate = 115200;
     uint8_t buff[512];
+    int buff_last = 0;
     char dev[20] ="/dev/ttyS1";
     char temp_buf[256] = {0};
     int i, hide = TRUE;
@@ -410,11 +415,18 @@ int main(int argc, char **argv)
         {
             if (events[n].data.fd == fd)
             {
-                if ((nread = read(fd, buff, 512)) > 0)
+                if ((nread = read(fd, buff + buff_last, 512 - buff_last)) > 0)
                 {
-                    if(nread > 20)
+                    if (nread > 20)
                         recv_printf(LINES - 4, 0, buff, nread, COLOR_PAIR(3));
-                    phase(buff, nread);
+                    if (nread > 0)
+                        buff_last = phase(buff, nread + buff_last);
+                    if (buff_last < nread)
+                    {
+                        mvprintw(0, 30, "last ERRORS:%d", ++error);
+                        recv_printf(1, 20, buff + tail_index, nread - tail_index, COLOR_PAIR(1));
+                    }
+                    buff_last = nread - buff_last;
                 }
             }
             if (events[n].data.fd == fd_in)
