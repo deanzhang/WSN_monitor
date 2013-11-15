@@ -137,9 +137,7 @@ int phase(uint8_t *buff, int nread)
             head = (msg_head_t *)&buff[i];
             if (head->len > (nread - i - 2))
             {
-                mvprintw(0, 20, "ERRORS:%d", ++error);
-                recv_printf(1, 20, buff + i, nread - i, COLOR_PAIR(1));
-                continue;
+                break;
             }
             tail = (msg_tail_t *)&buff[i + head->len];
             if ((tail->tail != TAIL_SYNC) || (tail->xor_sum != checksum(&buff[i + 2], head->len - 2)))
@@ -186,6 +184,7 @@ int phase(uint8_t *buff, int nread)
                     s->msg_lost = 0;
                     parent = (msg_parent_t *)&buff[i + 16];
                     s->battery_state = parent->battery_state;
+                    s->signal_lqi = parent->signal_lqi;
 
                     p = find_terminal(parent->long_addr);
                     if (p == NULL)
@@ -194,7 +193,6 @@ int phase(uint8_t *buff, int nread)
                         new_session_flag = 1;
                         sprintf(p->type, "ROUTE");
                     }
-                    p->signal_lqi = parent->signal_lqi;
                     break;
                 case 0x20:
                     if (buff[i + 16] != 0x88 || buff[i + 17] != 0x88)
@@ -352,7 +350,7 @@ int main(int argc, char **argv)
     mvvline(6, (COLS - 41), ACS_VLINE, LINES -6);
     mvaddch(5, (COLS - 41), ACS_TTEE);
     wattron(main_win, COLOR_PAIR(5));
-    mvwprintw(main_win, 0, 0, "TEM-L_ADDR-S_ADDR-Name1-Name2-P_X-P_Y\tMSG-(SUM)-(LST)");
+    mvwprintw(main_win, 0, 0, " Name1   L_ADDR-S_ADDR Nrcv Nlst BTY_STA LQI TIMES");
     wattroff(main_win, COLOR_PAIR(5));
 
     field[0] = new_field(field_attr[0].h, field_attr[0].w, field_attr[0].y, field_attr[0].x, 0, 0);
@@ -419,8 +417,8 @@ int main(int argc, char **argv)
                     buff_last = nread - buff_done;
                     if (buff_done < nread)
                     {
-                        mvprintw(0, 30, "last ERRORS:%d", ++error);
-                        recv_printf(1, 20, buff + buff_done, buff_last, COLOR_PAIR(1));
+                        //mvprintw(0, 30, "last ERRORS:%d", ++error);
+                        //recv_printf(1, 20, buff + buff_done, buff_last, COLOR_PAIR(1));
                         memmove(buff, buff + buff_done, buff_last);
                     }
                 }
